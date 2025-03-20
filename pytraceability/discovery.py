@@ -2,21 +2,21 @@ import ast
 from dataclasses import dataclass, replace
 from importlib import util
 from pathlib import Path
-from typing import Generator, Protocol
+from typing import Generator
+
+
+MetaDataType = dict[str, str]
 
 
 @dataclass
 class Traceability:
     key: str
+    metadata: MetaDataType | None = None
 
 
-class TraceableProtocol(Protocol):
-    __traceability__: Traceability
-
-
-def traceability(key: str):
+def traceability(key: str, **kwargs):
     def wrapper(func):
-        func.__traceability__ = Traceability(key)
+        func.__traceability__ = Traceability(key, kwargs)
         return func
 
     return wrapper
@@ -32,6 +32,7 @@ UNKNOWN = "UNKNOWN"
 
 
 def _extract_traceability_from_decorator(decorator: ast.Call) -> ExtractionResult:
+    key = UNKNOWN
     kwargs = {}
     able_to_extract_statically = True
     for keyword in decorator.keywords:
@@ -42,13 +43,13 @@ def _extract_traceability_from_decorator(decorator: ast.Call) -> ExtractionResul
 
     if decorator.args:
         if isinstance(decorator.args[0], ast.Constant):
-            kwargs["key"] = decorator.args[0].s
+            key = decorator.args[0].s
         else:
             able_to_extract_statically = False
 
-    if "key" not in kwargs:
-        kwargs["key"] = UNKNOWN
-    return ExtractionResult(Traceability(**kwargs), able_to_extract_statically)
+    if "key" in kwargs:
+        key = kwargs.pop("key")
+    return ExtractionResult(Traceability(key, kwargs), able_to_extract_statically)
 
 
 def _get_module_name(
@@ -130,13 +131,33 @@ def collect_traceability_from_directory(
     dir_path: Path, project_root: Path
 ) -> Generator[SearchResult, None, None]:
     for file_path in dir_path.rglob("*.py"):
-        for search_result in _find_traceability_decorators(file_path):
-            if search_result.is_complete:
-                yield search_result
-            else:
-                traceability = _extract_traceability_using_module_import(
+        yield from extract_traceability_from_file(file_path, project_root)
+
+
+class InvalidTraceabilityError(Exception):
+    pass
+
+
+def extract_traceability_from_file(
+    file_path: Path, project_root: Path
+) -> Generator[SearchResult, None, None]:
+    for search_result in _find_traceability_decorators(file_path):
+        if search_result.is_complete:
+            yield search_result
+        else:
+            try:
+                traceability_data = _extract_traceability_using_module_import(
                     file_path, project_root, search_result.function_name
                 )
-                yield replace(
-                    search_result, traceability_data=traceability, is_complete=True
-                )
+                is_complete = True
+            except AttributeError:
+                # We can't extract info for this dynamically eg because it's a closure
+                traceability_data = search_result.traceability_data
+                is_complete = False
+            if traceability_data.key == UNKNOWN:
+                raise InvalidTraceabilityError("Traceability key must be determinable")
+            yield replace(
+                search_result,
+                traceability_data=traceability_data,
+                is_complete=is_complete,
+            )

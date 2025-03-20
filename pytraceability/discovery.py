@@ -39,6 +39,7 @@ def _extract_traceability_from_decorator(decorator: ast.Call) -> ExtractionResul
         if isinstance(keyword.value, ast.Constant):
             kwargs[keyword.arg] = keyword.value.s
         else:
+            kwargs[keyword.arg] = UNKNOWN
             able_to_extract_statically = False
 
     if decorator.args:

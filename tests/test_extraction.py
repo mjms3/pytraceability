@@ -9,6 +9,7 @@ from pytraceability.discovery import (
     extract_traceability_from_file,
     InvalidTraceabilityError,
     MetaDataType,
+    UNKNOWN,
 )
 from tests.examples import (
     function_with_traceability_key_as_arg,
@@ -18,6 +19,7 @@ from tests.examples import (
     closure_with_static_key,
     closure_with_dynamic_key,
     with_metadata,
+    closure_with_dynamic_metadata,
 )
 
 
@@ -28,6 +30,7 @@ def _test_from_module(
     module: ModuleType,
     line_num_offset: int = 0,
     metadata: MetaDataType | None = None,
+    is_complete: bool = True,
 ) -> None:
     if module.__file__ is None:
         raise ValueError(f"module.__file__ is None. Module: {module}")
@@ -37,7 +40,7 @@ def _test_from_module(
             line_number=5 + line_num_offset,
             end_line_number=6 + line_num_offset,
             traceability_data=Traceability(key="A key", metadata=metadata or {}),
-            is_complete=True,
+            is_complete=is_complete,
         ),
     ]
 
@@ -63,3 +66,12 @@ def test_closure_with_dynamic_key():
 
 def test_with_metadata():
     _test_from_module(with_metadata, metadata={"a": "b"})
+
+
+def test_closure_with_dynamic_metadata():
+    _test_from_module(
+        closure_with_dynamic_metadata,
+        metadata={"a": UNKNOWN},
+        line_num_offset=6,
+        is_complete=False,
+    )

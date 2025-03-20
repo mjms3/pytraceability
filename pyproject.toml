@@ -1,0 +1,21 @@
+[project]
+name = "pytraceability"
+version = "0.1.0"
+description = "A python library for linking code to requirements"
+authors = [
+    {name = "Max Shepherd",email = "shepherd.max@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "gitpython (>=3.1.44,<4.0.0)"
+]
+
+[tool.poetry]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

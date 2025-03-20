@@ -8,13 +8,21 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "gitpython (>=3.1.44,<4.0.0)"
+    "gitpython (>=3.1.44,<4.0.0)",
+    "ruff (>=0.11.1,<0.12.0)"
 ]
 
 [tool.poetry]
 
+[tool.pyright]
+# ...
+venvPath = "."
+venv = ".venv"
+
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
+pre-commit = "^4.2.0"
+pyright = "^1.1.397"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

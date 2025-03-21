@@ -1,4 +1,4 @@
-from pytraceability.discovery import traceability
+from pytraceability.common import traceability
 
 
 @traceability("A key")

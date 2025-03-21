@@ -4,12 +4,15 @@ from types import ModuleType
 import pytest
 
 from pytraceability.discovery import (
-    SearchResult,
-    Traceability,
     extract_traceability_from_file,
-    InvalidTraceabilityError,
+)
+from pytraceability.common import (
     MetaDataType,
+    Traceability,
     UNKNOWN,
+    ExtractionResult,
+    InvalidTraceabilityError,
+    DEFAULT_CONFIG,
 )
 from tests.examples import (
     function_with_traceability_key_as_arg,
@@ -33,8 +36,10 @@ def _test_from_module(
 ) -> None:
     if module.__file__ is None:
         raise ValueError(f"module.__file__ is None. Module: {module}")
-    assert list(extract_traceability_from_file(Path(module.__file__), TEST_ROOT)) == [
-        SearchResult(
+    assert list(
+        extract_traceability_from_file(Path(module.__file__), TEST_ROOT, DEFAULT_CONFIG)
+    ) == [
+        ExtractionResult(
             function_name="foo",
             line_number=5 + line_num_offset,
             end_line_number=6 + line_num_offset,

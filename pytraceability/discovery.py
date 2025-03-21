@@ -14,7 +14,7 @@ class Traceability:
     metadata: MetaDataType | None = None
 
 
-def traceability(key: str, **kwargs):
+def traceability(key: str, /, **kwargs):
     def wrapper(func):
         func.__traceability__ = Traceability(key, kwargs)
         return func
@@ -32,9 +32,17 @@ UNKNOWN = "UNKNOWN"
 
 
 def _extract_traceability_from_decorator(decorator: ast.Call) -> ExtractionResult:
-    key = UNKNOWN
     kwargs = {}
     able_to_extract_statically = True
+
+    if not decorator.args:
+        raise ImportError("Expected a key as an arg")
+    if isinstance(decorator.args[0], ast.Constant):
+        key = decorator.args[0].s
+    else:
+        key = UNKNOWN
+        able_to_extract_statically = False
+
     for keyword in decorator.keywords:
         if isinstance(keyword.value, ast.Constant):
             kwargs[keyword.arg] = keyword.value.s
@@ -42,14 +50,6 @@ def _extract_traceability_from_decorator(decorator: ast.Call) -> ExtractionResul
             kwargs[keyword.arg] = UNKNOWN
             able_to_extract_statically = False
 
-    if decorator.args:
-        if isinstance(decorator.args[0], ast.Constant):
-            key = decorator.args[0].s
-        else:
-            able_to_extract_statically = False
-
-    if "key" in kwargs:
-        key = kwargs.pop("key")
     return ExtractionResult(Traceability(key, kwargs), able_to_extract_statically)
 
 

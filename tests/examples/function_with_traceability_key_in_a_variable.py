@@ -3,6 +3,6 @@ from pytraceability.discovery import traceability
 _KEY = "A key"
 
 
-@traceability(key=_KEY)
+@traceability(_KEY)
 def foo():
     pass

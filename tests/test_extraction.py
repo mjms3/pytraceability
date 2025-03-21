@@ -13,7 +13,6 @@ from pytraceability.discovery import (
 )
 from tests.examples import (
     function_with_traceability_key_as_arg,
-    function_with_traceability_key_as_kwarg,
     function_with_traceability_key_in_a_variable,
     class_with_traceability_key,
     closure_with_static_key,
@@ -49,7 +48,6 @@ def _test_from_module(
     "module,line_num_offset",
     [
         (function_with_traceability_key_as_arg, 0),
-        (function_with_traceability_key_as_kwarg, 0),
         (function_with_traceability_key_in_a_variable, 2),
         (class_with_traceability_key, 0),
         (closure_with_static_key, 1),

@@ -3,8 +3,13 @@ from pathlib import Path
 from typing import Generator
 
 from pytraceability.ast_processing import extract_traceability_from_file_using_ast
+from pytraceability.common import InvalidTraceabilityError
 from pytraceability.custom import pytraceability
-from pytraceability.data_definition import PyTraceabilityConfig, ExtractionResult
+from pytraceability.data_definition import (
+    PyTraceabilityConfig,
+    ExtractionResult,
+    PyTraceabilityMode,
+)
 from pytraceability.import_processing import extract_traceabilities_using_module_import
 
 
@@ -29,7 +34,8 @@ def collect_traceability_from_directory(
 
 @pytraceability(
     "PYTRACEABILITY-3",
-    info="if pytraceability can't extract data statically, it tries to extract it dynamically by importing the module",
+    info="If pytraceability can't extract data statically, it has the option "
+    "to try to extract it dynamically by importing the module.",
 )
 def extract_traceability_from_file(
     file_path: Path,
@@ -43,6 +49,14 @@ def extract_traceability_from_file(
         else:
             incomplete_extractions.append(extraction)
     if len(incomplete_extractions) > 0:
-        yield from extract_traceabilities_using_module_import(
-            file_path, project_root, incomplete_extractions
-        )
+        if config.mode == PyTraceabilityMode.static_only:
+            raise InvalidTraceabilityError(
+                f"In {config.mode} mode, all data must be static. "
+                f"The following nodes have dynamic data: {incomplete_extractions}"
+            )
+        elif config.mode == PyTraceabilityMode.static_plus_dynamic:
+            yield from extract_traceabilities_using_module_import(
+                file_path, project_root, incomplete_extractions
+            )
+        else:  # pragma: no cover
+            raise ValueError(f"Invalid mode: {config.mode}")

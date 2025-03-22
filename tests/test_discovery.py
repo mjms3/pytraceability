@@ -17,6 +17,7 @@ from pytraceability.data_definition import (
     MetaDataType,
     DEFAULT_CONFIG,
     PyTraceabilityConfig,
+    PyTraceabilityMode,
 )
 from tests.examples import (
     function_with_traceability,
@@ -33,6 +34,7 @@ from tests.examples import (
 
 
 TEST_ROOT = Path(__file__).parent
+TEST_CONFIG = PyTraceabilityConfig(mode=PyTraceabilityMode.static_plus_dynamic)
 
 
 def _test_from_module(
@@ -41,11 +43,12 @@ def _test_from_module(
     line_num_offset: int = 0,
     metadata: MetaDataType | None = None,
     is_complete: bool = True,
+    config: PyTraceabilityConfig = TEST_CONFIG,
 ) -> None:
     if module.__file__ is None:
         raise ValueError(f"module.__file__ is None. Module: {module}")
     file_path = Path(module.__file__)
-    actual = list(extract_traceability_from_file(file_path, TEST_ROOT, DEFAULT_CONFIG))
+    actual = list(extract_traceability_from_file(file_path, TEST_ROOT, config))
     expected = [
         ExtractionResult(
             file_path=file_path,
@@ -81,9 +84,16 @@ def test_successful_extraction(
     )
 
 
+@pytest.mark.raises(exception=InvalidTraceabilityError)
+def test_static_mode_errors_if_unable_to_get_traceability_data_statically() -> None:
+    _test_from_module(
+        function_with_traceability_key_in_a_variable, config=DEFAULT_CONFIG
+    )
+
+
 def test_multiple_traceability_one_key_in_a_variable() -> None:
     file_path = Path(function_with_multiple_traceability_one_key_in_a_variable.__file__)
-    actual = list(extract_traceability_from_file(file_path, TEST_ROOT, DEFAULT_CONFIG))
+    actual = list(extract_traceability_from_file(file_path, TEST_ROOT, TEST_CONFIG))
     expected = [
         ExtractionResult(
             file_path=file_path,

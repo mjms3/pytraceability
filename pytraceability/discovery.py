@@ -1,16 +1,11 @@
 import fnmatch
-from dataclasses import replace
 from pathlib import Path
 from typing import Generator
 
 from pytraceability.ast_processing import extract_traceability_from_file_using_ast
-from pytraceability.common import (
-    UNKNOWN,
-    InvalidTraceabilityError,
-)
 from pytraceability.custom import pytraceability
 from pytraceability.data_definition import PyTraceabilityConfig, ExtractionResult
-from pytraceability.import_processing import _extract_traceability_using_module_import
+from pytraceability.import_processing import extract_traceabilities_using_module_import
 
 
 def _file_is_excluded(path: Path, exclude_file_patterns: list[str]) -> bool:
@@ -37,22 +32,13 @@ def extract_traceability_from_file(
     project_root: Path,
     config: PyTraceabilityConfig,
 ) -> Generator[ExtractionResult, None, None]:
-    for search_result in extract_traceability_from_file_using_ast(file_path, config):
-        if search_result.is_complete():
-            yield search_result
+    incomplete_extractions = []
+    for extraction in extract_traceability_from_file_using_ast(file_path, config):
+        if extraction.is_complete():
+            yield extraction
         else:
-            try:
-                traceability_data = _extract_traceability_using_module_import(
-                    file_path, project_root, search_result.function_name
-                )
-
-            except AttributeError:
-                # We can't extract info for this dynamically eg because it's a closure
-                traceability_data = search_result.traceability_data
-
-            if any(t.key == UNKNOWN for t in traceability_data):
-                raise InvalidTraceabilityError("Traceability key must be determinable")
-            yield replace(
-                search_result,
-                traceability_data=traceability_data,
-            )
+            incomplete_extractions.append(extraction)
+    if len(incomplete_extractions) > 0:
+        yield from extract_traceabilities_using_module_import(
+            file_path, project_root, incomplete_extractions
+        )

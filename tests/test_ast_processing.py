@@ -3,10 +3,10 @@ from pathlib import Path
 from textwrap import dedent
 
 from pytraceability.ast_processing import TraceabilityVisitor
+from pytraceability.common import Traceability
 from pytraceability.data_definition import (
     ExtractionResult,
     DEFAULT_CONFIG,
-    ExtractedTraceability,
 )
 
 _FILE_PATH = Path(__file__)
@@ -25,7 +25,7 @@ def test_statically_extract_traceability_decorators():
         ExtractionResult(
             file_path=_FILE_PATH,
             traceability_data=[
-                ExtractedTraceability(key="A key", metadata={}, is_complete=True)
+                Traceability(key="A key", metadata={}, is_complete=True)
             ],
             function_name="foo",
             line_number=2,
@@ -48,7 +48,7 @@ def test_can_statically_extract_stacked_traceability_decorators():
         ExtractionResult(
             file_path=_FILE_PATH,
             traceability_data=[
-                ExtractedTraceability(key=k, metadata={}, is_complete=True)
+                Traceability(key=k, metadata={}, is_complete=True)
                 for k in ("KEY 1", "KEY 2")
             ],
             function_name="foo",

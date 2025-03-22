@@ -25,7 +25,10 @@ def test_traceability_decorators_stack():
     def foo(x):
         return x + 1
 
-    assert foo.__traceability__ == [Traceability("KEY 1"), Traceability("KEY 2")]
+    assert getattr(foo, "__traceability__") == [
+        Traceability("KEY 1"),
+        Traceability("KEY 2"),
+    ]
 
 
 @pytest.mark.raises(exception=ValueError)

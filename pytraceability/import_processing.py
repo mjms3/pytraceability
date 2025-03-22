@@ -1,6 +1,10 @@
+from dataclasses import replace
 from importlib import util
 from pathlib import Path
-from pytraceability.common import Traceability
+from typing import Generator
+
+from pytraceability.common import Traceability, UNKNOWN, InvalidTraceabilityError
+from pytraceability.data_definition import ExtractionResult
 
 
 def _get_module_name(
@@ -34,12 +38,7 @@ def _load_python_module(
     return module
 
 
-def _extract_traceability_using_module_import(
-    file_path: Path,
-    project_root: Path,
-    node_name: str,
-) -> list[Traceability]:
-    module = _load_python_module(file_path, project_root)
+def _extract_traceability(module, node_name) -> list[Traceability]:
     current_top_level_object = module
     attribute_path_to_node = node_name.split(".")
     for attribute in attribute_path_to_node[:-1]:
@@ -47,3 +46,19 @@ def _extract_traceability_using_module_import(
     return getattr(
         current_top_level_object, attribute_path_to_node[-1]
     ).__traceability__
+
+
+def extract_traceabilities_using_module_import(
+    file_path: Path,
+    project_root: Path,
+    extraction_results: list[ExtractionResult],
+) -> Generator[ExtractionResult, None, None]:
+    module = _load_python_module(file_path, project_root)
+    for extraction in extraction_results:
+        try:
+            traceability_data = _extract_traceability(module, extraction.function_name)
+            yield replace(extraction, traceability_data=traceability_data)
+        except AttributeError:
+            if any(t.key == UNKNOWN for t in extraction.traceability_data):
+                raise InvalidTraceabilityError("Traceability key must be determinable")
+            yield extraction

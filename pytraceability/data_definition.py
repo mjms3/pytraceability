@@ -16,18 +16,13 @@ class PyTraceabilityConfig:
 DEFAULT_CONFIG = PyTraceabilityConfig()
 
 
-@dataclass(frozen=True)
-class ExtractedTraceability(Traceability):
-    is_complete: bool = True
-
-
 @dataclass
 class ExtractionResult:
     file_path: Path
     function_name: str
     line_number: int
     end_line_number: int | None
-    traceability_data: list[ExtractedTraceability]
+    traceability_data: list[Traceability]
 
     def is_complete(self) -> bool:
         return all(t.is_complete for t in self.traceability_data)

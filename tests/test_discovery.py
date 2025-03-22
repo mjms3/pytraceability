@@ -9,12 +9,12 @@ from pytraceability.discovery import (
 from pytraceability.common import (
     UNKNOWN,
     InvalidTraceabilityError,
+    Traceability,
 )
 from pytraceability.data_definition import (
     ExtractionResult,
     MetaDataType,
     DEFAULT_CONFIG,
-    ExtractedTraceability,
 )
 from tests.examples import (
     function_with_traceability,
@@ -51,7 +51,7 @@ def _test_from_module(
             line_number=5 + line_num_offset,
             end_line_number=6 + line_num_offset,
             traceability_data=[
-                ExtractedTraceability(
+                Traceability(
                     key="A key", metadata=metadata or {}, is_complete=is_complete
                 )
             ],
@@ -89,7 +89,7 @@ def test_multiple_traceability_one_key_in_a_variable() -> None:
             line_number=8,
             end_line_number=9,
             traceability_data=[
-                ExtractedTraceability(key=k, metadata={}, is_complete=True)
+                Traceability(key=k, metadata={}, is_complete=True)
                 for k in ("A key", "Another key")
             ],
         )

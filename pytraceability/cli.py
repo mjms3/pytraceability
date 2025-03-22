@@ -36,5 +36,5 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    result = main(sys.argv[1:])
-    sys.exit(result)
+    exit_code = main(sys.argv[1:])
+    sys.exit(exit_code)

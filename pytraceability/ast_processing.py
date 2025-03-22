@@ -4,15 +4,15 @@ from pathlib import Path
 from pytraceability.common import (
     UNKNOWN,
     InvalidTraceabilityError,
+    Traceability,
 )
 from pytraceability.data_definition import (
     PyTraceabilityConfig,
-    ExtractedTraceability,
     ExtractionResult,
 )
 
 
-def _extract_traceability_from_decorator(decorator: ast.Call) -> ExtractedTraceability:
+def _extract_traceability_from_decorator(decorator: ast.Call) -> Traceability:
     kwargs = {}
     able_to_extract_statically = True
 
@@ -33,7 +33,7 @@ def _extract_traceability_from_decorator(decorator: ast.Call) -> ExtractedTracea
             kwargs[keyword.arg] = UNKNOWN
             able_to_extract_statically = False
 
-    return ExtractedTraceability(key, kwargs, able_to_extract_statically)
+    return Traceability(key, kwargs, able_to_extract_statically)
 
 
 class TraceabilityVisitor(ast.NodeVisitor):

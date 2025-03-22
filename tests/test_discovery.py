@@ -1,5 +1,6 @@
 from pathlib import Path
 from types import ModuleType
+from unittest import mock
 
 import pytest
 
@@ -55,6 +56,7 @@ def _test_from_module(
             function_name=function_name,
             line_number=5 + line_num_offset,
             end_line_number=6 + line_num_offset,
+            source_code=mock.ANY,
             traceability_data=[
                 Traceability(
                     key="A key", metadata=metadata or {}, is_complete=is_complete
@@ -100,6 +102,7 @@ def test_multiple_traceability_one_key_in_a_variable() -> None:
             function_name="foo",
             line_number=8,
             end_line_number=9,
+            source_code=mock.ANY,
             traceability_data=[
                 Traceability(key=k, metadata={}, is_complete=True)
                 for k in ("A key", "Another key")
@@ -140,6 +143,7 @@ def test_collect_from_directory():
             function_name="foo",
             line_number=5,
             end_line_number=6,
+            source_code=mock.ANY,
             traceability_data=[
                 Traceability(key="KEY-1", metadata={}, is_complete=True)
             ],
@@ -149,6 +153,7 @@ def test_collect_from_directory():
             function_name="foo",
             line_number=5,
             end_line_number=6,
+            source_code=mock.ANY,
             traceability_data=[
                 Traceability(key="KEY-2", metadata={}, is_complete=True)
             ],

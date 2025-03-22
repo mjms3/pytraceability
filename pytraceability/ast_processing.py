@@ -40,9 +40,12 @@ def _extract_traceability_from_decorator(decorator: ast.Call) -> Traceability:
 
 
 class TraceabilityVisitor(ast.NodeVisitor):
-    def __init__(self, config: PyTraceabilityConfig, file_path: Path) -> None:
+    def __init__(
+        self, config: PyTraceabilityConfig, file_path: Path, source_code: str
+    ) -> None:
         self.config = config
         self.file_path = file_path
+        self.source_code = source_code
 
         self.stack = []
         self.traceability_data: list[ExtractionResult] = []
@@ -66,6 +69,7 @@ class TraceabilityVisitor(ast.NodeVisitor):
                     function_name=".".join(self.stack),
                     line_number=node.lineno,
                     end_line_number=node.end_lineno,
+                    source_code=ast.get_source_segment(self.source_code, node),
                     traceability_data=traceability,
                 )
             )
@@ -89,5 +93,8 @@ def extract_traceability_from_file_using_ast(
     file_path: Path, config: PyTraceabilityConfig
 ) -> list[ExtractionResult]:
     with open(file_path, "r") as f:
-        tree = ast.parse(f.read(), filename=file_path)
-        return TraceabilityVisitor(config, file_path=file_path).visit(tree)
+        source_code = f.read()
+        tree = ast.parse(source_code, filename=file_path)
+        return TraceabilityVisitor(
+            config, file_path=file_path, source_code=source_code
+        ).visit(tree)

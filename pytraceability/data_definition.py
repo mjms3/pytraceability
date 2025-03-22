@@ -30,6 +30,7 @@ class ExtractionResult:
     function_name: str
     line_number: int
     end_line_number: int | None
+    source_code: str | None
     traceability_data: list[Traceability]
 
     def is_complete(self) -> bool:

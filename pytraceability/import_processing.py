@@ -3,7 +3,12 @@ from importlib import util
 from pathlib import Path
 from typing import Generator
 
-from pytraceability.common import Traceability, UNKNOWN, InvalidTraceabilityError
+from pytraceability.common import (
+    Traceability,
+    UNKNOWN,
+    InvalidTraceabilityError,
+    TraceabilityErrorMessages,
+)
 from pytraceability.custom import pytraceability
 from pytraceability.data_definition import ExtractionResult
 
@@ -63,6 +68,10 @@ def extract_traceabilities_using_module_import(
             traceability_data = _extract_traceability(module, extraction.function_name)
             yield replace(extraction, traceability_data=traceability_data)
         except AttributeError:
-            if any(t.key == UNKNOWN for t in extraction.traceability_data):
-                raise InvalidTraceabilityError("Traceability key must be determinable")
+            unknown_keys = (t.key == UNKNOWN for t in extraction.traceability_data)
+            if any(unknown_keys):
+                raise InvalidTraceabilityError.from_allowed_message_types(
+                    TraceabilityErrorMessages.KEY_CAN_NOT_BE_UNKNOWN,
+                    f"The traceability decorators with unknown keys are: {unknown_keys}",
+                )
             yield extraction

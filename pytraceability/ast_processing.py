@@ -6,12 +6,13 @@ from typing_extensions import cast
 from pytraceability.common import (
     UNKNOWN,
     InvalidTraceabilityError,
-    Traceability,
+    TraceabilityErrorMessages,
 )
 from pytraceability.custom import pytraceability
 from pytraceability.data_definition import (
     PyTraceabilityConfig,
     ExtractionResult,
+    Traceability,
 )
 
 
@@ -20,9 +21,13 @@ def _extract_traceability_from_decorator(decorator: ast.Call) -> Traceability:
     able_to_extract_statically = True
 
     if not decorator.args:
-        raise InvalidTraceabilityError("Expected a key as an arg")
+        raise InvalidTraceabilityError.from_allowed_message_types(
+            TraceabilityErrorMessages.KEY_MUST_BE_ARG
+        )
     if len(decorator.args) != 1:
-        raise InvalidTraceabilityError("traceability must have only one arg")
+        raise InvalidTraceabilityError.from_allowed_message_types(
+            TraceabilityErrorMessages.ONLY_ONE_ARG
+        )
     if isinstance(decorator.args[0], ast.Constant):
         key = decorator.args[0].s
     else:

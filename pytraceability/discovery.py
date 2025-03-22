@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Generator
 
 from pytraceability.ast_processing import extract_traceability_from_file_using_ast
-from pytraceability.common import InvalidTraceabilityError
+from pytraceability.common import InvalidTraceabilityError, TraceabilityErrorMessages
 from pytraceability.custom import pytraceability
 from pytraceability.data_definition import (
     PyTraceabilityConfig,
@@ -50,9 +50,9 @@ def extract_traceability_from_file(
             incomplete_extractions.append(extraction)
     if len(incomplete_extractions) > 0:
         if config.mode == PyTraceabilityMode.static_only:
-            raise InvalidTraceabilityError(
-                f"In {config.mode} mode, all data must be static. "
-                f"The following nodes have dynamic data: {incomplete_extractions}"
+            raise InvalidTraceabilityError.from_allowed_message_types(
+                TraceabilityErrorMessages.STATIC_MODE,
+                f"The following nodes have dynamic data: {incomplete_extractions}",
             )
         elif config.mode == PyTraceabilityMode.static_plus_dynamic:
             yield from extract_traceabilities_using_module_import(

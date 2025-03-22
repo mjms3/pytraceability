@@ -4,9 +4,18 @@ from enum import Enum
 from pathlib import Path
 from typing import Mapping, Any
 
-from pytraceability.common import Traceability
 
 MetaDataType = Mapping[str, Any]
+
+
+@dataclass(frozen=True, eq=False)
+class Traceability:
+    key: str
+    metadata: MetaDataType = field(default_factory=dict)
+    is_complete: bool = True
+
+    def __eq__(self, other: Any) -> bool:
+        return self.key == other.key and self.metadata == other.metadata
 
 
 class PyTraceabilityMode(str, Enum):

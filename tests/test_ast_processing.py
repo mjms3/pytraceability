@@ -5,10 +5,11 @@ from textwrap import dedent
 import pytest
 
 from pytraceability.ast_processing import TraceabilityVisitor
-from pytraceability.common import Traceability, InvalidTraceabilityError
+from pytraceability.common import InvalidTraceabilityError
 from pytraceability.data_definition import (
     ExtractionResult,
     DEFAULT_CONFIG,
+    Traceability,
 )
 
 _FILE_PATH = Path(__file__)

@@ -8,6 +8,7 @@ from pytraceability.common import (
     InvalidTraceabilityError,
     Traceability,
 )
+from pytraceability.custom import pytraceability
 from pytraceability.data_definition import (
     PyTraceabilityConfig,
     ExtractionResult,
@@ -80,6 +81,10 @@ class TraceabilityVisitor(ast.NodeVisitor):
             super().generic_visit(node)
 
 
+@pytraceability(
+    "PYTRACEABILITY-2",
+    info="pytraceability extracts traceability info from the decorators statically",
+)
 def extract_traceability_from_file_using_ast(
     file_path: Path, config: PyTraceabilityConfig
 ) -> list[ExtractionResult]:

@@ -27,6 +27,10 @@ def collect_traceability_from_directory(
         yield from extract_traceability_from_file(file_path, project_root, config)
 
 
+@pytraceability(
+    "PYTRACEABILITY-3",
+    info="if pytraceability can't extract data statically, it tries to extract it dynamically by importing the module",
+)
 def extract_traceability_from_file(
     file_path: Path,
     project_root: Path,

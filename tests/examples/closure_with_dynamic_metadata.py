@@ -1,12 +1,12 @@
 from pytraceability.common import traceability
 
 
-def bar():
+def foo():
     METADATA = "METADATA"
 
     @traceability(
         "A key",
         a=METADATA,
     )
-    def foo():
+    def bar():
         pass

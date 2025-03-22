@@ -1,16 +1,6 @@
-from typing import TypedDict
-
-from pytraceability.data_definition import Traceability
-from typing_extensions import Unpack
+from pytraceability.common import traceability
 
 
-class PyTraceabilityArgs(TypedDict):
-    info: str
-
-
-def pytraceability(key: str, /, **kwargs: Unpack[PyTraceabilityArgs]):
-    def wrapper(func):
-        func.__traceability__ = Traceability(key, metadata=kwargs)
-        return func
-
-    return wrapper
+class pytraceability(traceability):
+    def __init__(self, key: str, /, info: str):
+        super().__init__(key, info=info)

@@ -8,6 +8,7 @@ from pytraceability.common import (
     UNKNOWN,
     InvalidTraceabilityError,
 )
+from pytraceability.custom import pytraceability
 from pytraceability.data_definition import PyTraceabilityConfig, ExtractionResult
 from pytraceability.import_processing import _extract_traceability_using_module_import
 
@@ -16,6 +17,10 @@ def _file_is_excluded(path: Path, exclude_file_patterns: list[str]) -> bool:
     return any(fnmatch.fnmatch(str(path), pat) for pat in exclude_file_patterns)
 
 
+@pytraceability(
+    "PYTRACEABILITY-1",
+    info="pytraceability searches a directory for traceability decorators",
+)
 def collect_traceability_from_directory(
     dir_path: Path,
     project_root: Path,

@@ -1,19 +1,18 @@
 from dataclasses import dataclass, field
 from typing import Mapping, Any
 
+from pytraceability.common import Traceability
+
 MetaDataType = Mapping[str, Any]
-
-
-@dataclass
-class Traceability:
-    key: str
-    metadata: MetaDataType = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
 class PyTraceabilityConfig:
     decorator_name: str = "traceability"
     exclude_patterns: list[str] = field(default_factory=lambda: [])
+
+
+DEFAULT_CONFIG = PyTraceabilityConfig()
 
 
 @dataclass

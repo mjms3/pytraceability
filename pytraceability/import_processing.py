@@ -1,7 +1,6 @@
 from importlib import util
 from pathlib import Path
-
-from pytraceability.data_definition import Traceability
+from pytraceability.common import Traceability
 
 
 def _get_module_name(
@@ -41,4 +40,10 @@ def _extract_traceability_using_module_import(
     node_name: str,
 ) -> Traceability:
     module = _load_python_module(file_path, project_root)
-    return getattr(module, node_name).__traceability__
+    current_top_level_object = module
+    attribute_path_to_node = node_name.split(".")
+    for attribute in attribute_path_to_node[:-1]:
+        current_top_level_object = getattr(current_top_level_object, attribute)
+    return getattr(
+        current_top_level_object, attribute_path_to_node[-1]
+    ).__traceability__

@@ -1,9 +1,12 @@
 import ast
 from textwrap import dedent
 
-from pytraceability.ast_processing import statically_extract_traceability_decorators
-from pytraceability.common import DEFAULT_CONFIG
-from pytraceability.data_definition import ExtractionResult, Traceability
+from pytraceability.ast_processing import Visitor
+from pytraceability.data_definition import (
+    ExtractionResult,
+    DEFAULT_CONFIG,
+)
+from pytraceability.common import Traceability
 
 
 def test_statically_extract_traceability_decorators():
@@ -14,7 +17,7 @@ def test_statically_extract_traceability_decorators():
         pass
     """)
     )
-    decorators = list(statically_extract_traceability_decorators(tree, DEFAULT_CONFIG))
+    decorators = Visitor(DEFAULT_CONFIG).visit(tree)
     assert decorators == [
         ExtractionResult(
             traceability_data=Traceability(key="A key", metadata={}),

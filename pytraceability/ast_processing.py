@@ -1,12 +1,11 @@
 import ast
 from pathlib import Path
-from typing import Generator
 
 from pytraceability.common import (
     UNKNOWN,
+    Traceability,
 )
 from pytraceability.data_definition import (
-    Traceability,
     PyTraceabilityConfig,
     SearchResult,
     ExtractionResult,
@@ -35,34 +34,48 @@ def _extract_traceability_from_decorator(decorator: ast.Call) -> SearchResult:
     return SearchResult(Traceability(key, kwargs), able_to_extract_statically)
 
 
-def extract_traceability_from_file_using_ast(
-    file_path: Path, config: PyTraceabilityConfig
-) -> Generator[ExtractionResult, None, None]:
-    with open(file_path, "r") as f:
-        tree = ast.parse(f.read(), filename=file_path)
-        yield from statically_extract_traceability_decorators(tree, config)
+class Visitor(ast.NodeVisitor):
+    def __init__(self, config: PyTraceabilityConfig) -> None:
+        self.stack = []
+        self.traceability_data: list[ExtractionResult] = []
+        self.config = config
 
+    def visit(self, node):
+        super().visit(node)
+        return self.traceability_data
 
-def statically_extract_traceability_decorators(
-    tree: ast.Module, config: PyTraceabilityConfig
-) -> Generator[ExtractionResult, None, None]:
-    callable_nodes = (
-        node
-        for node in ast.walk(tree)
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
-    )
-    for node in callable_nodes:
+    def check_callable_node(self, node):
         for decorator in node.decorator_list:
             if not isinstance(decorator, ast.Call):
                 continue
             if not isinstance(decorator.func, ast.Name):
                 continue
-            if decorator.func.id == config.decorator_name:
+            if decorator.func.id == self.config.decorator_name:
                 ast_data = _extract_traceability_from_decorator(decorator)
-                yield ExtractionResult(
-                    function_name=node.name,
-                    line_number=node.lineno,
-                    end_line_number=node.end_lineno,
-                    traceability_data=ast_data.traceability_data,
-                    is_complete=ast_data.is_complete,
+                self.traceability_data.append(
+                    ExtractionResult(
+                        function_name=".".join(self.stack),
+                        line_number=node.lineno,
+                        end_line_number=node.end_lineno,
+                        traceability_data=ast_data.traceability_data,
+                        is_complete=ast_data.is_complete,
+                    )
                 )
+
+    def generic_visit(self, node):
+        if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            name = node.name
+            self.stack.append(name)
+            self.check_callable_node(node)
+            super().generic_visit(node)
+            self.stack.pop()
+        else:
+            super().generic_visit(node)
+
+
+def extract_traceability_from_file_using_ast(
+    file_path: Path, config: PyTraceabilityConfig
+) -> list[ExtractionResult]:
+    with open(file_path, "r") as f:
+        tree = ast.parse(f.read(), filename=file_path)
+        return Visitor(config).visit(tree)

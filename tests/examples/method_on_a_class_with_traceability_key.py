@@ -1,7 +1,7 @@
 from pytraceability.common import traceability
 
 
-def foo():
+class Foo:
     @traceability("A key")
-    def bar():
+    def bar(self):
         pass

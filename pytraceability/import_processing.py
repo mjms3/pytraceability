@@ -38,7 +38,7 @@ def _extract_traceability_using_module_import(
     file_path: Path,
     project_root: Path,
     node_name: str,
-) -> Traceability:
+) -> list[Traceability]:
     module = _load_python_module(file_path, project_root)
     current_top_level_object = module
     attribute_path_to_node = node_name.split(".")

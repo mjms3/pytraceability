@@ -38,22 +38,21 @@ def extract_traceability_from_file(
     config: PyTraceabilityConfig,
 ) -> Generator[ExtractionResult, None, None]:
     for search_result in extract_traceability_from_file_using_ast(file_path, config):
-        if search_result.is_complete:
+        if search_result.is_complete():
             yield search_result
         else:
             try:
                 traceability_data = _extract_traceability_using_module_import(
                     file_path, project_root, search_result.function_name
                 )
-                is_complete = True
+
             except AttributeError:
                 # We can't extract info for this dynamically eg because it's a closure
                 traceability_data = search_result.traceability_data
-                is_complete = False
-            if traceability_data.key == UNKNOWN:
+
+            if any(t.key == UNKNOWN for t in traceability_data):
                 raise InvalidTraceabilityError("Traceability key must be determinable")
             yield replace(
                 search_result,
                 traceability_data=traceability_data,
-                is_complete=is_complete,
             )

@@ -3,21 +3,23 @@ from pathlib import Path
 
 from pytraceability.common import (
     UNKNOWN,
-    Traceability,
+    InvalidTraceabilityError,
 )
 from pytraceability.data_definition import (
     PyTraceabilityConfig,
-    SearchResult,
+    ExtractedTraceability,
     ExtractionResult,
 )
 
 
-def _extract_traceability_from_decorator(decorator: ast.Call) -> SearchResult:
+def _extract_traceability_from_decorator(decorator: ast.Call) -> ExtractedTraceability:
     kwargs = {}
     able_to_extract_statically = True
 
     if not decorator.args:
-        raise ImportError("Expected a key as an arg")
+        raise InvalidTraceabilityError("Expected a key as an arg")
+    if len(decorator.args) != 1:
+        raise InvalidTraceabilityError("traceability must have only one arg")
     if isinstance(decorator.args[0], ast.Constant):
         key = decorator.args[0].s
     else:
@@ -31,36 +33,40 @@ def _extract_traceability_from_decorator(decorator: ast.Call) -> SearchResult:
             kwargs[keyword.arg] = UNKNOWN
             able_to_extract_statically = False
 
-    return SearchResult(Traceability(key, kwargs), able_to_extract_statically)
+    return ExtractedTraceability(key, kwargs, able_to_extract_statically)
 
 
-class Visitor(ast.NodeVisitor):
-    def __init__(self, config: PyTraceabilityConfig) -> None:
+class TraceabilityVisitor(ast.NodeVisitor):
+    def __init__(self, config: PyTraceabilityConfig, file_path: Path) -> None:
+        self.config = config
+        self.file_path = file_path
+
         self.stack = []
         self.traceability_data: list[ExtractionResult] = []
-        self.config = config
 
     def visit(self, node):
         super().visit(node)
         return self.traceability_data
 
     def check_callable_node(self, node):
+        traceability = []
         for decorator in node.decorator_list:
             if not isinstance(decorator, ast.Call):
                 continue
             if not isinstance(decorator.func, ast.Name):
                 continue
             if decorator.func.id == self.config.decorator_name:
-                ast_data = _extract_traceability_from_decorator(decorator)
-                self.traceability_data.append(
-                    ExtractionResult(
-                        function_name=".".join(self.stack),
-                        line_number=node.lineno,
-                        end_line_number=node.end_lineno,
-                        traceability_data=ast_data.traceability_data,
-                        is_complete=ast_data.is_complete,
-                    )
+                traceability.append(_extract_traceability_from_decorator(decorator))
+        if len(traceability) > 0:
+            self.traceability_data.append(
+                ExtractionResult(
+                    file_path=self.file_path,
+                    function_name=".".join(self.stack),
+                    line_number=node.lineno,
+                    end_line_number=node.end_lineno,
+                    traceability_data=traceability,
                 )
+            )
 
     def generic_visit(self, node):
         if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -78,4 +84,4 @@ def extract_traceability_from_file_using_ast(
 ) -> list[ExtractionResult]:
     with open(file_path, "r") as f:
         tree = ast.parse(f.read(), filename=file_path)
-        return Visitor(config).visit(tree)
+        return TraceabilityVisitor(config, file_path=file_path).visit(tree)

@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Mapping, Any
 
 from pytraceability.common import Traceability
@@ -15,14 +16,18 @@ class PyTraceabilityConfig:
 DEFAULT_CONFIG = PyTraceabilityConfig()
 
 
-@dataclass
-class SearchResult:
-    traceability_data: Traceability
-    is_complete: bool
+@dataclass(frozen=True)
+class ExtractedTraceability(Traceability):
+    is_complete: bool = True
 
 
 @dataclass
-class ExtractionResult(SearchResult):
+class ExtractionResult:
+    file_path: Path
     function_name: str
     line_number: int
     end_line_number: int | None
+    traceability_data: list[ExtractedTraceability]
+
+    def is_complete(self) -> bool:
+        return all(t.is_complete for t in self.traceability_data)

@@ -1,6 +1,8 @@
 import ast
 from pathlib import Path
 
+from typing_extensions import cast
+
 from pytraceability.common import (
     UNKNOWN,
     InvalidTraceabilityError,
@@ -51,12 +53,11 @@ class TraceabilityVisitor(ast.NodeVisitor):
     def check_callable_node(self, node):
         traceability = []
         for decorator in node.decorator_list:
-            if not isinstance(decorator, ast.Call):
-                continue
-            if not isinstance(decorator.func, ast.Name):
-                continue
+            cast(ast.Call, decorator)
+            cast(ast.Name, decorator.func)
             if decorator.func.id == self.config.decorator_name:
                 traceability.append(_extract_traceability_from_decorator(decorator))
+
         if len(traceability) > 0:
             self.traceability_data.append(
                 ExtractionResult(

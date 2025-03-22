@@ -15,10 +15,7 @@ def _get_module_name(
     project_root = project_root.resolve()
 
     relative_path = file_path.relative_to(project_root)
-    module_name = relative_path.with_suffix("").as_posix().replace("/", ".")
-    if module_name.endswith("__init__"):
-        module_name = module_name[:9]
-    return module_name
+    return relative_path.with_suffix("").as_posix().replace("/", ".")
 
 
 def _load_python_module(
@@ -27,12 +24,12 @@ def _load_python_module(
 ):
     module_name = _get_module_name(file_path, project_root)
     spec = util.spec_from_file_location(module_name, file_path)
-    if spec is None or spec.loader is None:
+    if spec is None or spec.loader is None:  # pragma: no cover
         raise RuntimeError(
             f"Unable to load spec for module: {module_name} from {file_path}"
         )
     module = util.module_from_spec(spec)
-    if module is None:
+    if module is None:  # pragma: no cover
         raise RuntimeError(f"Unable to load module from spec {spec}")
     spec.loader.exec_module(module)
     return module

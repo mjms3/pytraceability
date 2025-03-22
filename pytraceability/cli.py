@@ -1,5 +1,6 @@
 import os
 import sys
+from enum import Enum
 from pathlib import Path
 
 from tap import Tap
@@ -8,13 +9,19 @@ from pytraceability.data_definition import PyTraceabilityConfig
 from pytraceability.discovery import collect_traceability_from_directory
 
 
+class OutputFormats(str, Enum):
+    FULL = "full"
+    KEY_ONLY = "key-only"
+
+
 class CliArgs(Tap):
     base_directory: Path = Path(os.getcwd()).parent  # TODO - undo this change
     decorator_name: str = "pytraceability"  # TODO - undo this change
     exclude_patterns: list[str]
+    output_format: OutputFormats = OutputFormats.FULL
 
     def configure(self) -> None:
-        self.add_argument("--exclude-patterns", default=["*test*"])
+        self.add_argument("--exclude_patterns", default=[])
 
 
 def main(argv: list[str]) -> int:
@@ -31,10 +38,14 @@ def main(argv: list[str]) -> int:
         args.base_directory,
         config,
     ):
-        print(result)
+        if args.output_format == OutputFormats.FULL:  # pragma: no cover
+            # This is temporary and for debugging only
+            print(result)
+        elif args.output_format == OutputFormats.KEY_ONLY:
+            for traceability in result.traceability_data:
+                print(traceability.key)
     return 0
 
 
-if __name__ == "__main__":
-    exit_code = main(sys.argv[1:])
-    sys.exit(exit_code)
+if __name__ == "__main__":  # pragma: no cover
+    sys.exit(main(sys.argv[1:]))

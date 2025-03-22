@@ -2,8 +2,10 @@ import ast
 from pathlib import Path
 from textwrap import dedent
 
+import pytest
+
 from pytraceability.ast_processing import TraceabilityVisitor
-from pytraceability.common import Traceability
+from pytraceability.common import Traceability, InvalidTraceabilityError
 from pytraceability.data_definition import (
     ExtractionResult,
     DEFAULT_CONFIG,
@@ -56,3 +58,27 @@ def test_can_statically_extract_stacked_traceability_decorators():
             end_line_number=4,
         )
     ]
+
+
+@pytest.mark.raises(exception=InvalidTraceabilityError)
+def test_key_must_be_specified():
+    tree = ast.parse(
+        dedent("""\
+    @traceability()
+    def foo():
+        pass
+    """)
+    )
+    TraceabilityVisitor(DEFAULT_CONFIG, _FILE_PATH).visit(tree)
+
+
+@pytest.mark.raises(exception=InvalidTraceabilityError)
+def test_cannot_have_two_args():
+    tree = ast.parse(
+        dedent("""\
+    @traceability('key1','key2')
+    def foo():
+        pass
+    """)
+    )
+    TraceabilityVisitor(DEFAULT_CONFIG, _FILE_PATH).visit(tree)

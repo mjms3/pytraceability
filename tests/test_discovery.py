@@ -5,6 +5,7 @@ import pytest
 
 from pytraceability.discovery import (
     extract_traceability_from_file,
+    collect_traceability_from_directory,
 )
 from pytraceability.common import (
     UNKNOWN,
@@ -15,6 +16,7 @@ from pytraceability.data_definition import (
     ExtractionResult,
     MetaDataType,
     DEFAULT_CONFIG,
+    PyTraceabilityConfig,
 )
 from tests.examples import (
     function_with_traceability,
@@ -114,3 +116,30 @@ def test_closure_with_dynamic_metadata():
         line_num_offset=6,
         is_complete=False,
     )
+
+
+def test_collect_from_directory():
+    file_path = Path(__file__).parent / "examples/separate_directory"
+
+    actual = list(
+        collect_traceability_from_directory(file_path, TEST_ROOT, DEFAULT_CONFIG)
+    )
+    expected = [
+        ExtractionResult(
+            file_path=file_path / "function_with_traceability.py",
+            function_name="foo",
+            line_number=5,
+            end_line_number=6,
+            traceability_data=[
+                Traceability(key="A key", metadata={}, is_complete=True)
+            ],
+        )
+    ]
+    assert actual == expected
+
+
+def test_filename_exclusion():
+    file_path = Path(function_with_traceability.__file__).parent
+    config = PyTraceabilityConfig(exclude_patterns=["*test*"])
+    actual = list(collect_traceability_from_directory(file_path, TEST_ROOT, config))
+    assert actual == []

@@ -7,13 +7,11 @@ from pytraceability.discovery import (
     extract_traceability_from_file,
 )
 from pytraceability.common import (
-    MetaDataType,
-    Traceability,
     UNKNOWN,
-    ExtractionResult,
     InvalidTraceabilityError,
     DEFAULT_CONFIG,
 )
+from pytraceability.data_definition import Traceability, ExtractionResult, MetaDataType
 from tests.examples import (
     function_with_traceability_key_as_arg,
     function_with_traceability_key_in_a_variable,

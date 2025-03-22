@@ -1,7 +1,7 @@
 from importlib import util
 from pathlib import Path
 
-from pytraceability.common import Traceability
+from pytraceability.data_definition import Traceability
 
 
 def _get_module_name(

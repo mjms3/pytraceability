@@ -3,11 +3,13 @@ from pathlib import Path
 from typing import Generator
 
 from pytraceability.common import (
-    SearchResult,
     UNKNOWN,
+)
+from pytraceability.data_definition import (
     Traceability,
-    ExtractionResult,
     PyTraceabilityConfig,
+    SearchResult,
+    ExtractionResult,
 )
 
 
@@ -52,13 +54,9 @@ def statically_extract_traceability_decorators(
     for node in callable_nodes:
         for decorator in node.decorator_list:
             if not isinstance(decorator, ast.Call):
-                raise RuntimeError(
-                    f"Decorator {decorator} is not an instance of ast.Call"
-                )
+                continue
             if not isinstance(decorator.func, ast.Name):
-                raise RuntimeError(
-                    f"Decorator.func {decorator.func} s not an instance of ast.Name"
-                )
+                continue
             if decorator.func.id == config.decorator_name:
                 ast_data = _extract_traceability_from_decorator(decorator)
                 yield ExtractionResult(

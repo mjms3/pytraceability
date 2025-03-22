@@ -2,7 +2,8 @@ import ast
 from textwrap import dedent
 
 from pytraceability.ast_processing import statically_extract_traceability_decorators
-from pytraceability.common import ExtractionResult, Traceability, DEFAULT_CONFIG
+from pytraceability.common import DEFAULT_CONFIG
+from pytraceability.data_definition import ExtractionResult, Traceability
 
 
 def test_statically_extract_traceability_decorators():

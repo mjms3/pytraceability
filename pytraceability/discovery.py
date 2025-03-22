@@ -1,3 +1,4 @@
+import fnmatch
 from dataclasses import replace
 from pathlib import Path
 from typing import Generator
@@ -5,11 +6,14 @@ from typing import Generator
 from pytraceability.ast_processing import extract_traceability_from_file_using_ast
 from pytraceability.common import (
     UNKNOWN,
-    ExtractionResult,
     InvalidTraceabilityError,
-    PyTraceabilityConfig,
 )
+from pytraceability.data_definition import PyTraceabilityConfig, ExtractionResult
 from pytraceability.import_processing import _extract_traceability_using_module_import
+
+
+def _file_is_excluded(path: Path, exclude_file_patterns: list[str]) -> bool:
+    return any(fnmatch.fnmatch(str(path), pat) for pat in exclude_file_patterns)
 
 
 def collect_traceability_from_directory(
@@ -18,6 +22,8 @@ def collect_traceability_from_directory(
     config: PyTraceabilityConfig,
 ) -> Generator[ExtractionResult, None, None]:
     for file_path in dir_path.rglob("*.py"):
+        if _file_is_excluded(file_path, config.exclude_patterns):
+            continue
         yield from extract_traceability_from_file(file_path, project_root, config)
 
 

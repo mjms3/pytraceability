@@ -18,5 +18,6 @@ def test_cli(capsys):
     assert [line for line in captured.out.split(os.linesep) if line] == [
         f"Extracting traceability from {base_dir}",
         f"Using project root: {base_dir}",
-        "A key",
+        "KEY-1",
+        "KEY-2",
     ]

@@ -126,14 +126,23 @@ def test_collect_from_directory():
     )
     expected = [
         ExtractionResult(
-            file_path=file_path / "function_with_traceability.py",
+            file_path=file_path / "file1.py",
             function_name="foo",
             line_number=5,
             end_line_number=6,
             traceability_data=[
-                Traceability(key="A key", metadata={}, is_complete=True)
+                Traceability(key="KEY-1", metadata={}, is_complete=True)
             ],
-        )
+        ),
+        ExtractionResult(
+            file_path=file_path / "file2.py",
+            function_name="foo",
+            line_number=5,
+            end_line_number=6,
+            traceability_data=[
+                Traceability(key="KEY-2", metadata={}, is_complete=True)
+            ],
+        ),
     ]
     assert actual == expected
 

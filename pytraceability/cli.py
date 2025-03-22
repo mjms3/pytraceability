@@ -44,6 +44,8 @@ def main(argv: list[str]) -> int:
         elif args.output_format == OutputFormats.KEY_ONLY:
             for traceability in result.traceability_data:
                 print(traceability.key)
+        else:  # pragma: no cover
+            raise ValueError(f"Unknown output format: {args.output_format}")
     return 0
 
 

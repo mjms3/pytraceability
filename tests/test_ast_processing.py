@@ -72,6 +72,17 @@ def test_key_must_be_specified():
     TraceabilityVisitor(DEFAULT_CONFIG, _FILE_PATH).visit(tree)
 
 
+def test_other_decorators_are_ignored():
+    tree = ast.parse(
+        dedent("""\
+    @another_decorator()
+    def foo():
+        pass
+    """)
+    )
+    assert TraceabilityVisitor(DEFAULT_CONFIG, _FILE_PATH).visit(tree) == []
+
+
 @pytest.mark.raises(exception=InvalidTraceabilityError)
 def test_cannot_have_two_args():
     tree = ast.parse(

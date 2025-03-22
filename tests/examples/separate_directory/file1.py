@@ -1,6 +1,6 @@
 from pytraceability.common import traceability
 
 
-@traceability("A key")
+@traceability("KEY-1")
 def foo():
     pass

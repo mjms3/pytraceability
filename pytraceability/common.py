@@ -34,7 +34,7 @@ additional_error_info = {
     TraceabilityErrorMessages.ONLY_ONE_ARG: dedent("""\
     The traceability decorator must have only one arg (the key).
     If you're using a custom traceability decorator, the __init__ should have signature:
-    def __init__(self, key, *, arg1: str, arg2: str):
+    def __init__(self, key, *, arg1: str, arg2: str, ...):
     """),
     TraceabilityErrorMessages.STATIC_MODE: dedent(f"""\
     In f{PyTraceabilityMode.static_only} mode, all data must be defined in constants so that they

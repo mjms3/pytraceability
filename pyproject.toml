@@ -18,6 +18,7 @@ dependencies = [
 [tool.pyright]
 venvPath = "."
 venv = ".venv"
+reportUnnecessaryTypeIgnoreComment = true
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"

@@ -3,13 +3,15 @@ from pathlib import Path
 from typing import Generator
 
 from pytraceability.ast_processing import extract_traceability_from_file_using_ast
-from pytraceability.common import InvalidTraceabilityError, TraceabilityErrorMessages
+from pytraceability.exceptions import (
+    TraceabilityErrorMessages,
+    InvalidTraceabilityError,
+)
 from pytraceability.custom import pytraceability
 from pytraceability.data_definition import (
-    PyTraceabilityConfig,
     ExtractionResult,
-    PyTraceabilityMode,
 )
+from pytraceability.config import PyTraceabilityMode, PyTraceabilityConfig
 from pytraceability.import_processing import extract_traceabilities_using_module_import
 
 

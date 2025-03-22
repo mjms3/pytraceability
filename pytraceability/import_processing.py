@@ -6,8 +6,10 @@ from typing import Generator
 from pytraceability.common import (
     Traceability,
     UNKNOWN,
-    InvalidTraceabilityError,
+)
+from pytraceability.exceptions import (
     TraceabilityErrorMessages,
+    InvalidTraceabilityError,
 )
 from pytraceability.custom import pytraceability
 from pytraceability.data_definition import ExtractionResult

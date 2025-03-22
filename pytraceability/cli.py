@@ -5,7 +5,7 @@ from pathlib import Path
 
 from tap import Tap
 
-from pytraceability.data_definition import PyTraceabilityConfig
+from pytraceability.config import PyTraceabilityConfig
 from pytraceability.discovery import collect_traceability_from_directory
 
 

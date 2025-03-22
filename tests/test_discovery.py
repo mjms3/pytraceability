@@ -10,15 +10,17 @@ from pytraceability.discovery import (
 )
 from pytraceability.common import (
     UNKNOWN,
-    InvalidTraceabilityError,
     Traceability,
 )
+from pytraceability.exceptions import InvalidTraceabilityError
 from pytraceability.data_definition import (
     ExtractionResult,
     MetaDataType,
-    DEFAULT_CONFIG,
-    PyTraceabilityConfig,
+)
+from pytraceability.config import (
     PyTraceabilityMode,
+    PyTraceabilityConfig,
+    DEFAULT_CONFIG,
 )
 from tests.examples import (
     function_with_traceability,

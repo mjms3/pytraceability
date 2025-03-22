@@ -5,15 +5,17 @@ from typing_extensions import cast
 
 from pytraceability.common import (
     UNKNOWN,
-    InvalidTraceabilityError,
+)
+from pytraceability.exceptions import (
     TraceabilityErrorMessages,
+    InvalidTraceabilityError,
 )
 from pytraceability.custom import pytraceability
 from pytraceability.data_definition import (
-    PyTraceabilityConfig,
     ExtractionResult,
     Traceability,
 )
+from pytraceability.config import PyTraceabilityConfig
 
 
 def _extract_traceability_from_decorator(decorator: ast.Call) -> Traceability:

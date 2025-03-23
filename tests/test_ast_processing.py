@@ -80,9 +80,17 @@ def test_key_must_be_specified():
     TraceabilityVisitor(DEFAULT_CONFIG, _FILE_PATH, source_code).visit(tree)
 
 
-def test_other_decorators_are_ignored():
-    source_code = dedent("""\
-    @another_decorator()
+@pytest.mark.parametrize(
+    "decorator",
+    [
+        ("@another_decorator()",),
+        ("@dataclass",),
+        ("@click.option()",),
+    ],
+)
+def test_other_decorators_are_ignored(decorator):
+    source_code = dedent(f"""\
+    {decorator}
     def foo():
         pass
     """)

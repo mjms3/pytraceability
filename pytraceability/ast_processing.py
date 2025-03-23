@@ -65,7 +65,10 @@ class TraceabilityVisitor(ast.NodeVisitor):
         traceability = []
         for decorator in node.decorator_list:
             cast(ast.Call, decorator)
-            cast(ast.Name, decorator.func)
+            if not hasattr(decorator, "func") or isinstance(
+                decorator.func, ast.Attribute
+            ):
+                continue
             if decorator.func.id == self.config.decorator_name:
                 traceability.append(_extract_traceability_from_decorator(decorator))
 

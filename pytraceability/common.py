@@ -21,3 +21,6 @@ class traceability:
             )
         fn.__traceability__.append(Traceability(key=self.key, metadata=self.metadata))
         return fn
+
+
+STANDARD_DECORATOR_NAME = traceability.__name__

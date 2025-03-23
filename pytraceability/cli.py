@@ -3,9 +3,10 @@ import sys
 from enum import Enum
 from pathlib import Path
 
-from tap import Tap
+import click
 
-from pytraceability.config import PyTraceabilityConfig
+from pytraceability.common import STANDARD_DECORATOR_NAME
+from pytraceability.config import PyTraceabilityConfig, PyTraceabilityMode
 from pytraceability.discovery import collect_traceability_from_directory
 
 
@@ -14,40 +15,46 @@ class OutputFormats(str, Enum):
     KEY_ONLY = "key-only"
 
 
-class CliArgs(Tap):
-    base_directory: Path = Path(os.getcwd())
-    decorator_name: str = "traceability"
-    exclude_patterns: list[str]
-    output_format: OutputFormats = OutputFormats.FULL
-
-    def configure(self) -> None:
-        self.add_argument("--exclude_patterns", default=[])
-
-
-def main(argv: list[str]) -> int:
-    args = CliArgs().parse_args(argv)
-    print(f"Extracting traceability from {args.base_directory}")
-    print(f"Using project root: {args.base_directory}")
+@click.command()
+@click.option("--base-directory", type=Path, default=Path(os.getcwd()))
+@click.option("--decorator-name", type=str, default=STANDARD_DECORATOR_NAME)
+@click.option(
+    "--output-format",
+    type=click.Choice(list(OutputFormats)),
+    default=OutputFormats.FULL,
+)
+@click.option(
+    "--mode",
+    type=click.Choice(list(PyTraceabilityMode)),
+    default=PyTraceabilityMode.static_only,
+)
+def main(
+    base_directory: Path,
+    decorator_name: str,
+    output_format: OutputFormats,
+    mode: PyTraceabilityMode,
+):
+    click.echo(f"Extracting traceability from {base_directory}")
+    click.echo(f"Using project root: {base_directory}")
 
     config = PyTraceabilityConfig(
-        exclude_patterns=args.exclude_patterns,
-        decorator_name=args.decorator_name,
+        decorator_name=decorator_name,
+        mode=mode,
     )
     for result in collect_traceability_from_directory(
-        args.base_directory,
-        args.base_directory,
+        base_directory,
+        base_directory,
         config,
     ):
-        if args.output_format == OutputFormats.FULL:  # pragma: no cover
+        if output_format == OutputFormats.FULL:  # pragma: no cover
             # This is temporary and for debugging only
-            print(result)
-        elif args.output_format == OutputFormats.KEY_ONLY:
+            click.echo(result)
+        elif output_format == OutputFormats.KEY_ONLY:
             for traceability in result.traceability_data:
-                print(traceability.key)
+                click.echo(traceability.key)
         else:  # pragma: no cover
-            raise ValueError(f"Unknown output format: {args.output_format}")
-    return 0
+            raise ValueError(f"Unknown output format: {output_format}")
 
 
 if __name__ == "__main__":  # pragma: no cover
-    sys.exit(main(sys.argv[1:]))
+    sys.exit(main())

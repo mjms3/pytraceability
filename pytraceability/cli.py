@@ -15,8 +15,8 @@ class OutputFormats(str, Enum):
 
 
 class CliArgs(Tap):
-    base_directory: Path = Path(os.getcwd()).parent  # TODO - undo this change
-    decorator_name: str = "pytraceability"  # TODO - undo this change
+    base_directory: Path = Path(os.getcwd())
+    decorator_name: str = "traceability"
     exclude_patterns: list[str]
     output_format: OutputFormats = OutputFormats.FULL
 

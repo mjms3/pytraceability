@@ -15,7 +15,7 @@ from pytraceability.data_definition import (
     ExtractionResult,
     Traceability,
 )
-from pytraceability.config import PyTraceabilityConfig
+from pytraceability.config import PyTraceabilityConfig, PROJECT_NAME
 
 
 def _extract_traceability_from_decorator(decorator: ast.Call) -> Traceability:
@@ -94,7 +94,7 @@ class TraceabilityVisitor(ast.NodeVisitor):
 
 @pytraceability(
     "PYTRACEABILITY-2",
-    info="pytraceability extracts traceability info from the decorators statically",
+    info=f"{PROJECT_NAME} extracts traceability info from the decorators statically",
 )
 def extract_traceability_from_file_using_ast(
     file_path: Path, config: PyTraceabilityConfig

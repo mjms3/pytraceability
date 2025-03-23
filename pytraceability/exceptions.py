@@ -2,7 +2,7 @@ from enum import Enum
 from textwrap import dedent
 from typing_extensions import Self
 
-from pytraceability.config import PyTraceabilityMode
+from pytraceability.config import PyTraceabilityMode, PROJECT_NAME
 
 
 class TraceabilityErrorMessages(Enum):
@@ -10,7 +10,7 @@ class TraceabilityErrorMessages(Enum):
     ONLY_ONE_ARG = "Traceability decorator must have only one arg"
     STATIC_MODE = f"In {PyTraceabilityMode.static_only} mode, all data must be static."
     KEY_CAN_NOT_BE_UNKNOWN = (
-        "pytraceability must be able to work out a key for every decorator."
+        f"{PROJECT_NAME} must be able to work out a key for every decorator."
     )
 
     @classmethod

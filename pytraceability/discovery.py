@@ -11,7 +11,7 @@ from pytraceability.custom import pytraceability
 from pytraceability.data_definition import (
     ExtractionResult,
 )
-from pytraceability.config import PyTraceabilityMode, PyTraceabilityConfig
+from pytraceability.config import PyTraceabilityMode, PyTraceabilityConfig, PROJECT_NAME
 from pytraceability.import_processing import extract_traceabilities_using_module_import
 
 
@@ -21,7 +21,7 @@ def _file_is_excluded(path: Path, exclude_file_patterns: list[str]) -> bool:
 
 @pytraceability(
     "PYTRACEABILITY-1",
-    info="pytraceability searches a directory for traceability decorators",
+    info=f"{PROJECT_NAME} searches a directory for traceability decorators",
 )
 def collect_traceability_from_directory(
     dir_path: Path,

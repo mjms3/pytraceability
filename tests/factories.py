@@ -9,9 +9,8 @@ from pytraceability.config import (
 )
 from pytraceability.data_definition import (
     MetaDataType,
-    ExtractionResult,
-    Traceability,
     TraceabilityGitHistory,
+    TraceabilityReport,
 )
 from pytraceability.discovery import extract_traceability_from_file
 
@@ -37,17 +36,15 @@ def _test_from_module(
     file_path = Path(module.__file__)
     actual = list(extract_traceability_from_file(file_path, TEST_ROOT, config))
     expected = [
-        ExtractionResult(
+        TraceabilityReport(
             file_path=file_path,
             function_name=function_name,
             line_number=5 + line_num_offset,
             end_line_number=6 + line_num_offset,
             source_code=mock.ANY,
-            traceability_data=[
-                Traceability(
-                    key="A key", metadata=metadata or {}, is_complete=is_complete
-                )
-            ],
+            key="A key",
+            metadata=metadata or {},
+            is_complete=is_complete,
             history=history,
         ),
     ]

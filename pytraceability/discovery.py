@@ -10,7 +10,8 @@ from pytraceability.exceptions import (
 )
 from pytraceability.custom import pytraceability
 from pytraceability.data_definition import (
-    ExtractionResult,
+    ExtractionResultsList,
+    TraceabilityReport,
 )
 from pytraceability.config import (
     PyTraceabilityMode,
@@ -34,7 +35,26 @@ def collect_traceability_from_directory(
     dir_path: Path,
     project_root: Path,
     config: PyTraceabilityConfig,
-) -> Generator[ExtractionResult, None, None]:
+) -> Generator[TraceabilityReport, None, None]:
+    traceability_reports = _collect_traceability_from_directory(
+        dir_path, project_root, config
+    )
+    if config.git_history_mode == GitHistoryMode.NONE:
+        yield from traceability_reports
+    elif config.git_history_mode == GitHistoryMode.FUNCTION_HISTORY:
+        traceability_report_list = list(traceability_reports)
+        git_history = get_line_based_history(traceability_report_list, config)
+        for report in traceability_report_list:
+            yield replace(report, history=git_history[report.key])
+    else:  # pragma: no cover
+        raise ValueError(f"Unsupported git history mode: {config.git_history_mode}")
+
+
+def _collect_traceability_from_directory(
+    dir_path: Path,
+    project_root: Path,
+    config: PyTraceabilityConfig,
+) -> Generator[TraceabilityReport, None, None]:
     for file_path in dir_path.rglob("*.py"):
         if _file_is_excluded(file_path, config.exclude_patterns):
             continue
@@ -50,24 +70,12 @@ def extract_traceability_from_file(
     file_path: Path,
     project_root: Path,
     config: PyTraceabilityConfig,
-) -> Generator[ExtractionResult, None, None]:
-    for extraction_result in _get_extraction_results(config, file_path, project_root):
-        if config.git_history_mode == GitHistoryMode.NONE:
-            yield extraction_result
-        elif config.git_history_mode == GitHistoryMode.FUNCTION_HISTORY:
-            yield replace(
-                extraction_result,
-                history=get_line_based_history(extraction_result, config),
-            )
-        else:  # pragma: no cover
-            raise ValueError(f"Unsupported git history mode: {config.git_history_mode}")
-
-
-def _get_extraction_results(config, file_path, project_root):
+) -> list[TraceabilityReport]:
+    extractions = ExtractionResultsList()
     incomplete_extractions = []
     for extraction in extract_traceability_from_file_using_ast(file_path, config):
         if extraction.is_complete():
-            yield extraction
+            extractions.append(extraction)
         else:
             incomplete_extractions.append(extraction)
     if len(incomplete_extractions) > 0:
@@ -77,8 +85,11 @@ def _get_extraction_results(config, file_path, project_root):
                 f"The following nodes have dynamic data: {incomplete_extractions}",
             )
         elif config.mode == PyTraceabilityMode.static_plus_dynamic:
-            yield from extract_traceabilities_using_module_import(
-                file_path, project_root, incomplete_extractions
+            extractions.extend(
+                extract_traceabilities_using_module_import(
+                    file_path, project_root, incomplete_extractions
+                )
             )
         else:  # pragma: no cover
             raise ValueError(f"Invalid mode: {config.mode}")
+    return extractions.flatten()

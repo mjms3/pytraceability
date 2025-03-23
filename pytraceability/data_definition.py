@@ -1,14 +1,13 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from datetime import datetime
 
 from pathlib import Path
-from typing import Mapping, Any
-
+from typing import Mapping, Any, Generator
 
 MetaDataType = Mapping[str, Any]
 
 
-@dataclass(frozen=True, eq=False)
+@dataclass(eq=False)
 class Traceability:
     key: str
     metadata: MetaDataType = field(default_factory=dict)
@@ -28,14 +27,36 @@ class TraceabilityGitHistory:
 
 
 @dataclass
-class ExtractionResult:
+class CurrentLocationRecord:
     file_path: Path
     function_name: str
     line_number: int
     end_line_number: int | None
     source_code: str | None
-    traceability_data: list[Traceability]
+
+
+@dataclass
+class TraceabilityReport(Traceability, CurrentLocationRecord):
     history: list[TraceabilityGitHistory] | None = None
+
+
+@dataclass
+class ExtractionResult(CurrentLocationRecord):
+    traceability_data: list[Traceability]
 
     def is_complete(self) -> bool:
         return all(t.is_complete for t in self.traceability_data)
+
+
+class ExtractionResultsList(list[ExtractionResult]):
+    def _flat(self) -> Generator[TraceabilityReport, None, None]:
+        for extraction_result in self:
+            extraction_result_as_dict = asdict(extraction_result)
+            extraction_result_as_dict.pop("traceability_data")
+            for traceability_data in extraction_result.traceability_data:
+                kwargs = asdict(traceability_data)
+                kwargs.update(extraction_result_as_dict)
+                yield TraceabilityReport(**kwargs)
+
+    def flatten(self) -> list[TraceabilityReport]:
+        return list(self._flat())

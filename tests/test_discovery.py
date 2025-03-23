@@ -11,11 +11,10 @@ from pytraceability.discovery import (
 )
 from pytraceability.common import (
     UNKNOWN,
-    Traceability,
 )
 from pytraceability.exceptions import InvalidTraceabilityError
 from pytraceability.data_definition import (
-    ExtractionResult,
+    TraceabilityReport,
 )
 from pytraceability.config import (
     PyTraceabilityMode,
@@ -66,17 +65,17 @@ def test_multiple_traceability_one_key_in_a_variable() -> None:
     file_path = Path(function_with_multiple_traceability_one_key_in_a_variable.__file__)
     actual = list(extract_traceability_from_file(file_path, TEST_ROOT, TEST_CONFIG))
     expected = [
-        ExtractionResult(
+        TraceabilityReport(
             file_path=file_path,
             function_name="foo",
             line_number=8,
             end_line_number=9,
             source_code=mock.ANY,
-            traceability_data=[
-                Traceability(key=k, metadata={}, is_complete=True)
-                for k in ("A key", "Another key")
-            ],
+            key=k,
+            metadata={},
+            is_complete=True,
         )
+        for k in ("A key", "Another key")
     ]
     assert actual == expected
 
@@ -107,25 +106,25 @@ def test_collect_from_directory():
         collect_traceability_from_directory(file_path, TEST_ROOT, TEST_CONFIG)
     )
     expected = [
-        ExtractionResult(
+        TraceabilityReport(
             file_path=file_path / "file1.py",
             function_name="foo",
             line_number=5,
             end_line_number=6,
             source_code=mock.ANY,
-            traceability_data=[
-                Traceability(key="KEY-1", metadata={}, is_complete=True)
-            ],
+            key="KEY-1",
+            metadata={},
+            is_complete=True,
         ),
-        ExtractionResult(
+        TraceabilityReport(
             file_path=file_path / "file2.py",
             function_name="foo",
             line_number=5,
             end_line_number=6,
             source_code=mock.ANY,
-            traceability_data=[
-                Traceability(key="KEY-2", metadata={}, is_complete=True)
-            ],
+            key="KEY-2",
+            metadata={},
+            is_complete=True,
         ),
     ]
     assert actual == expected

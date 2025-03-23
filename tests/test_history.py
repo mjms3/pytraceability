@@ -14,17 +14,15 @@ SHOW_HISTORY_CONFIG = replace(
 
 
 def test_decorator_added_at_same_time_as_function():
-    extractions = list(
+    traceability_reports = list(
         collect_traceability_from_directory(
             GIT_HISTORY_TESTS_DIR, GIT_HISTORY_TESTS_DIR, SHOW_HISTORY_CONFIG
         )
     )
     key = "GIT-HISTORY-TEST-1"
-    valid_extractions = [
-        e for e in extractions if key in {t.key for t in e.traceability_data}
-    ]
-    assert len(valid_extractions) == 1
-    actual = valid_extractions[0]
+    relevant_reports = [t for t in traceability_reports if t.key == key]
+    assert len(relevant_reports) == 1
+    actual = relevant_reports[0]
 
     assert actual.history == [
         TraceabilityGitHistory(
@@ -44,26 +42,17 @@ def test_decorator_added_at_same_time_as_function():
 
 
 def test_decorator_added_to_preexisting_function():
-    extractions = list(
+    traceability_reports = list(
         collect_traceability_from_directory(
             GIT_HISTORY_TESTS_DIR, GIT_HISTORY_TESTS_DIR, SHOW_HISTORY_CONFIG
         )
     )
     key = "GIT-HISTORY-TEST-2"
-    valid_extractions = [
-        e for e in extractions if key in {t.key for t in e.traceability_data}
-    ]
-    assert len(valid_extractions) == 1
-    actual = valid_extractions[0]
+    relevant_reports = [t for t in traceability_reports if t.key == key]
+    assert len(relevant_reports) == 1
+    actual = relevant_reports[0]
 
     assert actual.history == [
-        TraceabilityGitHistory(
-            commit=mock.ANY,
-            author_name=mock.ANY,
-            author_date=mock.ANY,
-            message="History test setup: Add a function without a decorator",
-            diff="@@ -0,0 +1,2 @@\n+def second_function():\n+    pass\n",
-        ),
         TraceabilityGitHistory(
             commit=mock.ANY,
             author_name=mock.ANY,
@@ -76,5 +65,47 @@ def test_decorator_added_to_preexisting_function():
             '+@traceability("GIT-HISTORY-TEST-2")\n'
             " def second_function():\n"
             "     pass\n",
+        ),
+    ]
+
+
+def test_decorator_function_renamed():
+    traceability_reports = list(
+        collect_traceability_from_directory(
+            GIT_HISTORY_TESTS_DIR, GIT_HISTORY_TESTS_DIR, SHOW_HISTORY_CONFIG
+        )
+    )
+    key = "GIT-HISTORY-TEST-3"
+    relevant_reports = [t for t in traceability_reports if t.key == key]
+    assert len(relevant_reports) == 1
+    actual = relevant_reports[0]
+
+    assert actual.history == [
+        TraceabilityGitHistory(
+            commit=mock.ANY,
+            author_name=mock.ANY,
+            author_date=mock.ANY,
+            message="History test setup: Rename an existing function",
+            diff="@@ -2,5 +2,5 @@ from pytraceability.common "
+            "import traceability\n"
+            " \n"
+            " \n"
+            ' @traceability("GIT-HISTORY-TEST-3")\n'
+            "-def original_function_name():\n"
+            "+def new_function_name():\n"
+            "     pass\n",
+        ),
+        TraceabilityGitHistory(
+            commit=mock.ANY,
+            author_name=mock.ANY,
+            author_date=mock.ANY,
+            message="History test setup: Add a function to be renamed",
+            diff="@@ -0,0 +1,6 @@\n"
+            "+from pytraceability.common import traceability\n"
+            "+\n"
+            "+\n"
+            '+@traceability("GIT-HISTORY-TEST-3")\n'
+            "+def original_function_name():\n"
+            "+    pass\n",
         ),
     ]

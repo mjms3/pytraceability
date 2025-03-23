@@ -55,8 +55,7 @@ def main(
             # This is temporary and for debugging only
             click.echo(result)
         elif output_format == OutputFormats.KEY_ONLY:
-            for traceability in result.traceability_data:
-                click.echo(traceability.key)
+            click.echo(result.key)
         else:  # pragma: no cover
             raise ValueError(f"Unknown output format: {output_format}")
 

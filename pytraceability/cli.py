@@ -20,12 +20,12 @@ class OutputFormats(str, Enum):
 @click.option("--decorator-name", type=str, default=STANDARD_DECORATOR_NAME)
 @click.option(
     "--output-format",
-    type=click.Choice(list(OutputFormats)),
+    type=click.Choice([o.value for o in OutputFormats]),
     default=OutputFormats.FULL,
 )
 @click.option(
     "--mode",
-    type=click.Choice(list(PyTraceabilityMode)),
+    type=click.Choice([o.value for o in PyTraceabilityMode]),
     default=PyTraceabilityMode.static_only,
 )
 def main(

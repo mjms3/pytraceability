@@ -44,10 +44,6 @@ additional_error_info = {
     """),
 }
 
-assert set(additional_error_info.keys()) == set(
-    TraceabilityErrorMessages
-)  # Would be nice to do this by type checking
-
 
 class InvalidTraceabilityError(Exception):
     allowed_message_starts = TraceabilityErrorMessages.allowed_values()

@@ -1,3 +1,4 @@
+from dataclasses import replace
 from pathlib import Path
 from types import ModuleType
 from unittest import mock
@@ -15,12 +16,9 @@ from pytraceability.common import (
 from pytraceability.exceptions import InvalidTraceabilityError
 from pytraceability.data_definition import (
     ExtractionResult,
-    MetaDataType,
 )
 from pytraceability.config import (
     PyTraceabilityMode,
-    PyTraceabilityConfig,
-    DEFAULT_CONFIG,
 )
 from tests.examples import (
     function_with_traceability,
@@ -34,39 +32,7 @@ from tests.examples import (
     method_on_a_class_with_key_in_a_variable,
     function_with_multiple_traceability_one_key_in_a_variable,
 )
-
-
-TEST_ROOT = Path(__file__).parent
-TEST_CONFIG = PyTraceabilityConfig(mode=PyTraceabilityMode.static_plus_dynamic)
-
-
-def _test_from_module(
-    module: ModuleType,
-    function_name: str = "foo",
-    line_num_offset: int = 0,
-    metadata: MetaDataType | None = None,
-    is_complete: bool = True,
-    config: PyTraceabilityConfig = TEST_CONFIG,
-) -> None:
-    if module.__file__ is None:
-        raise ValueError(f"module.__file__ is None. Module: {module}")
-    file_path = Path(module.__file__)
-    actual = list(extract_traceability_from_file(file_path, TEST_ROOT, config))
-    expected = [
-        ExtractionResult(
-            file_path=file_path,
-            function_name=function_name,
-            line_number=5 + line_num_offset,
-            end_line_number=6 + line_num_offset,
-            source_code=mock.ANY,
-            traceability_data=[
-                Traceability(
-                    key="A key", metadata=metadata or {}, is_complete=is_complete
-                )
-            ],
-        ),
-    ]
-    assert actual == expected
+from tests.factories import TEST_ROOT, TEST_CONFIG, _test_from_module
 
 
 @pytest.mark.parametrize(
@@ -90,8 +56,9 @@ def test_successful_extraction(
 
 @pytest.mark.raises(exception=InvalidTraceabilityError)
 def test_static_mode_errors_if_unable_to_get_traceability_data_statically() -> None:
+    static_only_config = replace(TEST_CONFIG, mode=PyTraceabilityMode.static_only)
     _test_from_module(
-        function_with_traceability_key_in_a_variable, config=DEFAULT_CONFIG
+        function_with_traceability_key_in_a_variable, config=static_only_config
     )
 
 
@@ -137,7 +104,7 @@ def test_collect_from_directory():
     file_path = Path(__file__).parent / "examples/separate_directory"
 
     actual = list(
-        collect_traceability_from_directory(file_path, TEST_ROOT, DEFAULT_CONFIG)
+        collect_traceability_from_directory(file_path, TEST_ROOT, TEST_CONFIG)
     )
     expected = [
         ExtractionResult(
@@ -166,6 +133,6 @@ def test_collect_from_directory():
 
 def test_filename_exclusion():
     file_path = Path(function_with_traceability.__file__).parent
-    config = PyTraceabilityConfig(exclude_patterns=["*test*"])
+    config = replace(TEST_CONFIG, exclude_patterns=["*test*"])
     actual = list(collect_traceability_from_directory(file_path, TEST_ROOT, config))
     assert actual == []

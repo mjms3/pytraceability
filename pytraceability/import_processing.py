@@ -7,6 +7,7 @@ from pytraceability.common import (
     Traceability,
     UNKNOWN,
 )
+from pytraceability.config import PROJECT_NAME
 from pytraceability.exceptions import (
     TraceabilityErrorMessages,
     InvalidTraceabilityError,
@@ -55,7 +56,7 @@ def _extract_traceability(module, node_name) -> list[Traceability]:
 
 @pytraceability(
     "PYTRACEABILITY-4",
-    info="If pytraceability can't extract the key either statically or dynamically, an"
+    info=f"If {PROJECT_NAME} can't extract the key either statically or dynamically, an"
     f"{InvalidTraceabilityError.__name__} is raised. This might happen for a closure where "
     "the traceability key is stored in a variable.",
 )

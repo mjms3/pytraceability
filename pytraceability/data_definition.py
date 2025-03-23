@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import datetime
 
 from pathlib import Path
 from typing import Mapping, Any
@@ -18,6 +19,15 @@ class Traceability:
 
 
 @dataclass
+class TraceabilityGitHistory:
+    commit: str
+    author_name: str | None
+    author_date: datetime
+    message: str
+    diff: str
+
+
+@dataclass
 class ExtractionResult:
     file_path: Path
     function_name: str
@@ -25,6 +35,7 @@ class ExtractionResult:
     end_line_number: int | None
     source_code: str | None
     traceability_data: list[Traceability]
+    history: list[TraceabilityGitHistory] | None = None
 
     def is_complete(self) -> bool:
         return all(t.is_complete for t in self.traceability_data)

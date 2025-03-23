@@ -10,7 +10,7 @@ from pytraceability.data_definition import (
     ExtractionResult,
     Traceability,
 )
-from pytraceability.config import DEFAULT_CONFIG
+from tests.factories import TEST_CONFIG
 
 _FILE_PATH = Path(__file__)
 
@@ -26,9 +26,7 @@ def test_statically_extract_traceability_decorators():
         pass
     """)
     tree = ast.parse(source_code)
-    decorators = TraceabilityVisitor(DEFAULT_CONFIG, _FILE_PATH, source_code).visit(
-        tree
-    )
+    decorators = TraceabilityVisitor(TEST_CONFIG, _FILE_PATH, source_code).visit(tree)
     assert decorators == [
         ExtractionResult(
             file_path=_FILE_PATH,
@@ -51,9 +49,7 @@ def test_can_statically_extract_stacked_traceability_decorators():
         pass
     """)
     tree = ast.parse(source_code)
-    decorators = TraceabilityVisitor(DEFAULT_CONFIG, _FILE_PATH, source_code).visit(
-        tree
-    )
+    decorators = TraceabilityVisitor(TEST_CONFIG, _FILE_PATH, source_code).visit(tree)
     assert decorators == [
         ExtractionResult(
             file_path=_FILE_PATH,
@@ -77,15 +73,15 @@ def test_key_must_be_specified():
         pass
     """)
     tree = ast.parse(source_code)
-    TraceabilityVisitor(DEFAULT_CONFIG, _FILE_PATH, source_code).visit(tree)
+    TraceabilityVisitor(TEST_CONFIG, _FILE_PATH, source_code).visit(tree)
 
 
 @pytest.mark.parametrize(
     "decorator",
     [
-        ("@another_decorator()",),
-        ("@dataclass",),
-        ("@click.option()",),
+        "@another_decorator()",
+        "@dataclass",
+        "@click.option()",
     ],
 )
 def test_other_decorators_are_ignored(decorator):
@@ -95,9 +91,7 @@ def test_other_decorators_are_ignored(decorator):
         pass
     """)
     tree = ast.parse(source_code)
-    assert (
-        TraceabilityVisitor(DEFAULT_CONFIG, _FILE_PATH, source_code).visit(tree) == []
-    )
+    assert TraceabilityVisitor(TEST_CONFIG, _FILE_PATH, source_code).visit(tree) == []
 
 
 @pytest.mark.raises(exception=InvalidTraceabilityError)
@@ -108,4 +102,4 @@ def test_cannot_have_two_args():
         pass
     """)
     tree = ast.parse(source_code)
-    TraceabilityVisitor(DEFAULT_CONFIG, _FILE_PATH, source_code).visit(tree)
+    TraceabilityVisitor(TEST_CONFIG, _FILE_PATH, source_code).visit(tree)

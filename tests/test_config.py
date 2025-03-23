@@ -5,6 +5,7 @@ from pytraceability.config import (
     find_and_parse_config,
     PyTraceabilityConfig,
 )
+from tests.factories import THIS_REPO_ROOT
 
 
 def test_find_pyproject_file():
@@ -16,5 +17,5 @@ def test_find_pyproject_file():
 
 def test_find_and_parse_config():
     assert find_and_parse_config(Path(__file__)) == PyTraceabilityConfig(
-        decorator_name="pytraceability"
+        repo_root=THIS_REPO_ROOT, decorator_name="pytraceability"
     )

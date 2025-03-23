@@ -1,4 +1,5 @@
 import fnmatch
+from dataclasses import replace
 from pathlib import Path
 from typing import Generator
 
@@ -11,7 +12,13 @@ from pytraceability.custom import pytraceability
 from pytraceability.data_definition import (
     ExtractionResult,
 )
-from pytraceability.config import PyTraceabilityMode, PyTraceabilityConfig, PROJECT_NAME
+from pytraceability.config import (
+    PyTraceabilityMode,
+    PyTraceabilityConfig,
+    PROJECT_NAME,
+    GitHistoryMode,
+)
+from pytraceability.history import get_line_based_history
 from pytraceability.import_processing import extract_traceabilities_using_module_import
 
 
@@ -36,7 +43,7 @@ def collect_traceability_from_directory(
 
 @pytraceability(
     "PYTRACEABILITY-3",
-    info="If pytraceability can't extract data statically, it has the option "
+    info=f"If {PROJECT_NAME} can't extract data statically, it has the option "
     "to try to extract it dynamically by importing the module.",
 )
 def extract_traceability_from_file(
@@ -44,6 +51,19 @@ def extract_traceability_from_file(
     project_root: Path,
     config: PyTraceabilityConfig,
 ) -> Generator[ExtractionResult, None, None]:
+    for extraction_result in _get_extraction_results(config, file_path, project_root):
+        if config.git_history_mode == GitHistoryMode.NONE:
+            yield extraction_result
+        elif config.git_history_mode == GitHistoryMode.FUNCTION_HISTORY:
+            yield replace(
+                extraction_result,
+                history=get_line_based_history(extraction_result, config),
+            )
+        else:  # pragma: no cover
+            raise ValueError(f"Unsupported git history mode: {config.git_history_mode}")
+
+
+def _get_extraction_results(config, file_path, project_root):
     incomplete_extractions = []
     for extraction in extract_traceability_from_file_using_ast(file_path, config):
         if extraction.is_complete():

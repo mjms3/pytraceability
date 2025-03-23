@@ -6,7 +6,11 @@ from pathlib import Path
 import click
 
 from pytraceability.common import STANDARD_DECORATOR_NAME
-from pytraceability.config import PyTraceabilityConfig, PyTraceabilityMode
+from pytraceability.config import (
+    PyTraceabilityConfig,
+    PyTraceabilityMode,
+    get_repo_root,
+)
 from pytraceability.discovery import collect_traceability_from_directory
 
 
@@ -38,6 +42,7 @@ def main(
     click.echo(f"Using project root: {base_directory}")
 
     config = PyTraceabilityConfig(
+        repo_root=get_repo_root(base_directory),
         decorator_name=decorator_name,
         mode=mode,
     )

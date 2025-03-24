@@ -1,10 +1,16 @@
-import re
+import ast
+from pathlib import Path
 
 from pydriller import Repository
 
+from pytraceability.ast_processing import TraceabilityVisitor
 from pytraceability.config import PROJECT_NAME, PyTraceabilityConfig
 from pytraceability.custom import pytraceability
-from pytraceability.data_definition import TraceabilityGitHistory, TraceabilityReport
+from pytraceability.data_definition import (
+    TraceabilityGitHistory,
+    TraceabilityReport,
+    ExtractionResultsList,
+)
 
 
 @pytraceability(
@@ -31,24 +37,27 @@ def get_line_based_history(
             f for f in commit.modified_files if f.new_path in files_of_interest
         }
         for modified_file in relevant_files:
-            if (
-                modified_file.diff
-            ):  # TODO: Add a test for modified_file.diff being none.
-                for traceability_key in current_file_for_key:
-                    decorator_regex = (
-                        f"@{config.decorator_name}\(\s*['\"]{traceability_key}"
+            if modified_file.source_code is None or modified_file.new_path is None:
+                continue
+            tree = ast.parse(modified_file.source_code, filename=modified_file.new_path)
+            extraction_results = TraceabilityVisitor(
+                config,
+                file_path=Path(modified_file.new_path),
+                source_code=modified_file.source_code,
+            ).visit(tree)
+            for traceability_report in ExtractionResultsList(
+                extraction_results
+            ).flatten():
+                if traceability_report.key not in history:
+                    history[traceability_report.key] = []
+                history[traceability_report.key].append(
+                    TraceabilityGitHistory(
+                        commit=commit.hash,
+                        author_name=commit.author.name,
+                        author_date=commit.author_date,
+                        message=commit.msg.strip(),
+                        source_code=traceability_report.source_code,
                     )
-                    if re.search(decorator_regex, modified_file.diff):
-                        if traceability_key not in history:
-                            history[traceability_key] = []
-                        history[traceability_key].append(
-                            TraceabilityGitHistory(
-                                commit=commit.hash,
-                                author_name=commit.author.name,
-                                author_date=commit.author_date,
-                                message=commit.msg.strip(),
-                                diff=modified_file.diff,
-                            )
-                        )
+                )
 
     return history

@@ -23,7 +23,7 @@ class TraceabilityGitHistory:
     author_name: str | None
     author_date: datetime
     message: str
-    diff: str
+    source_code: str | None
 
 
 @dataclass

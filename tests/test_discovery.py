@@ -6,7 +6,6 @@ from unittest import mock
 import pytest
 
 from pytraceability.discovery import (
-    extract_traceability_from_file,
     collect_traceability_from_directory,
 )
 from pytraceability.common import (
@@ -29,7 +28,6 @@ from tests.examples import (
     closure_with_metadata_in_a_variable,
     method_on_a_class_with_traceability,
     method_on_a_class_with_key_in_a_variable,
-    function_with_multiple_traceability_one_key_in_a_variable,
 )
 from tests.factories import TEST_ROOT, TEST_CONFIG, _test_from_module
 
@@ -38,11 +36,9 @@ from tests.factories import TEST_ROOT, TEST_CONFIG, _test_from_module
     "module,function_name,line_num_offset",
     [
         (function_with_traceability, "foo", 0),
-        (function_with_traceability_key_in_a_variable, "foo", 2),
         (class_with_traceability, "foo", 0),
         (closure_with_traceability, "foo.bar", 1),
         (method_on_a_class_with_traceability, "Foo.bar", 1),
-        (method_on_a_class_with_key_in_a_variable, "Foo.bar", 3),
     ],
 )
 def test_successful_extraction(
@@ -53,31 +49,24 @@ def test_successful_extraction(
     )
 
 
+@pytest.mark.parametrize(
+    "module",
+    [
+        function_with_traceability_key_in_a_variable,
+        method_on_a_class_with_key_in_a_variable,
+    ],
+)
+def test_key_must_be_static(module):
+    with pytest.raises(InvalidTraceabilityError):
+        _test_from_module(module)
+
+
 @pytest.mark.raises(exception=InvalidTraceabilityError)
 def test_static_mode_errors_if_unable_to_get_traceability_data_statically() -> None:
     static_only_config = replace(TEST_CONFIG, mode=PyTraceabilityMode.static_only)
     _test_from_module(
         function_with_traceability_key_in_a_variable, config=static_only_config
     )
-
-
-def test_multiple_traceability_one_key_in_a_variable() -> None:
-    file_path = Path(function_with_multiple_traceability_one_key_in_a_variable.__file__)
-    actual = list(extract_traceability_from_file(file_path, TEST_ROOT, TEST_CONFIG))
-    expected = [
-        TraceabilityReport(
-            file_path=file_path,
-            function_name="foo",
-            line_number=8,
-            end_line_number=9,
-            source_code=mock.ANY,
-            key=k,
-            metadata={},
-            is_complete=True,
-        )
-        for k in ("A key", "Another key")
-    ]
-    assert actual == expected
 
 
 def test_closure_with_dynamic_key():

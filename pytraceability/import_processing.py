@@ -5,11 +5,9 @@ from typing import Generator
 
 from pytraceability.common import (
     Traceability,
-    UNKNOWN,
 )
 from pytraceability.config import PROJECT_NAME
 from pytraceability.exceptions import (
-    TraceabilityErrorMessages,
     InvalidTraceabilityError,
 )
 from pytraceability.custom import pytraceability
@@ -71,10 +69,4 @@ def extract_traceabilities_using_module_import(
             traceability_data = _extract_traceability(module, extraction.function_name)
             yield replace(extraction, traceability_data=traceability_data)
         except AttributeError:
-            unknown_keys = [t for t in extraction.traceability_data if t.key == UNKNOWN]
-            if len(unknown_keys) > 0:
-                raise InvalidTraceabilityError.from_allowed_message_types(
-                    TraceabilityErrorMessages.KEY_CAN_NOT_BE_UNKNOWN,
-                    f"The traceability decorators with unknown keys are: {unknown_keys}",
-                )
             yield extraction

@@ -9,7 +9,7 @@ class TraceabilityErrorMessages(Enum):
     KEY_MUST_BE_ARG = "Expected the key to be provided as an arg"
     ONLY_ONE_ARG = "Traceability decorator must have only one arg"
     STATIC_MODE = f"In {PyTraceabilityMode.static_only} mode, all data must be static."
-    KEY_CAN_NOT_BE_UNKNOWN = (
+    KEY_CAN_NOT_BE_DYNAMIC = (
         f"{PROJECT_NAME} must be able to work out a key for every decorator."
     )
 
@@ -36,11 +36,9 @@ additional_error_info = {
     code has side effects that are not covered by a 'if __name__="__main__":' guard, these will be executed as part
     of the import.
     """),
-    TraceabilityErrorMessages.KEY_CAN_NOT_BE_UNKNOWN: dedent(f"""\
-    pytraceability needs to be able to determine a key for each traceability decorator. In {PyTraceabilityMode.static_only}
-    this means the key must be a string. In {PyTraceabilityMode.static_plus_dynamic}, it could be a variable or determined
-    on the fly but, there are some situations where this isn't done even at import time, for example in a closure where
-    the key would only be determinable at run time.
+    TraceabilityErrorMessages.KEY_CAN_NOT_BE_DYNAMIC: dedent(f"""\
+    {PROJECT_NAME} requires the key to be dynamic. This is required for the repository mining to extract traceability data
+    to work.
     """),
 }
 

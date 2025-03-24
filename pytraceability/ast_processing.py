@@ -33,8 +33,9 @@ def _extract_traceability_from_decorator(decorator: ast.Call) -> Traceability:
     if isinstance(decorator.args[0], ast.Constant):
         key = decorator.args[0].s
     else:
-        key = UNKNOWN
-        able_to_extract_statically = False
+        raise InvalidTraceabilityError.from_allowed_message_types(
+            TraceabilityErrorMessages.KEY_CAN_NOT_BE_DYNAMIC
+        )
 
     for keyword in decorator.keywords:
         if isinstance(keyword.value, ast.Constant):

@@ -15,7 +15,7 @@ SHOW_HISTORY_CONFIG = replace(
 )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def traceability_reports():
     return list(
         collect_traceability_from_directory(

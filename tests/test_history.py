@@ -1,82 +1,103 @@
-from dataclasses import replace
 from pathlib import Path
+from textwrap import dedent
 from unittest import mock
 
 import pytest
+from git import Repo
 
-from pytraceability.config import GitHistoryMode
+from pytraceability.config import GitHistoryMode, PyTraceabilityConfig
 from pytraceability.data_definition import TraceabilityGitHistory
 from pytraceability.discovery import collect_traceability_from_directory
-from tests.factories import TEST_CONFIG
 
 GIT_HISTORY_TESTS_DIR = Path(__file__).parent / "git_history_tests"
-SHOW_HISTORY_CONFIG = replace(
-    TEST_CONFIG, git_history_mode=GitHistoryMode.FUNCTION_HISTORY
-)
 
 
-@pytest.fixture(scope="session")
-def traceability_reports():
-    return list(
-        collect_traceability_from_directory(
-            GIT_HISTORY_TESTS_DIR, GIT_HISTORY_TESTS_DIR, SHOW_HISTORY_CONFIG
-        )
+@pytest.fixture()
+def git_repo(tmp_path: Path) -> Repo:
+    return Repo.init(tmp_path)
+
+
+@pytest.fixture()
+def config(tmp_path: Path) -> PyTraceabilityConfig:
+    return PyTraceabilityConfig(
+        repo_root=tmp_path,
+        git_history_mode=GitHistoryMode.FUNCTION_HISTORY,
     )
 
 
-def test_decorator_added_at_same_time_as_function(traceability_reports):
-    key = "GIT-HISTORY-TEST-1"
-    relevant_reports = [t for t in traceability_reports if t.key == key]
-    assert len(relevant_reports) == 1
-    actual = relevant_reports[0]
+def test_decorator_added_at_same_time_as_function(
+    git_repo: Repo, tmp_path: Path, config: PyTraceabilityConfig
+):
+    source_file = tmp_path / "file1.py"
+    source_file.write_text(
+        dedent("""\
+    @traceability('KEY')
+    def foo():
+        pass
+    """)
+    )
+    git_repo.index.add(source_file)
+    commit_msg = "msg1"
+    git_repo.index.commit(commit_msg)
+    reports = list(collect_traceability_from_directory(tmp_path, tmp_path, config))
+    assert len(reports) == 1
+    actual = reports[0]
 
     assert actual.history == [
         TraceabilityGitHistory(
             commit=mock.ANY,
             author_name=mock.ANY,
             author_date=mock.ANY,
-            message="History test setup: Add a file with a decorator",
-            source_code="def first_function():\n    pass",
+            message=commit_msg,
+            source_code="def foo():\n    pass",
         )
     ]
 
 
-def test_decorator_added_to_preexisting_function(traceability_reports):
-    key = "GIT-HISTORY-TEST-2"
-    relevant_reports = [t for t in traceability_reports if t.key == key]
-    assert len(relevant_reports) == 1
-    actual = relevant_reports[0]
+def test_decorator_function_renamed(
+    git_repo: Repo, tmp_path: Path, config: PyTraceabilityConfig
+):
+    source_file = tmp_path / "file2.py"
+    source_file.write_text(
+        dedent("""\
+    @traceability('KEY')
+    def foo():
+        pass
+    """)
+    )
+    git_repo.index.add(source_file)
+    commit_msg1 = "msg1"
+    git_repo.index.commit(commit_msg1)
+
+    source_file = tmp_path / "file2.py"
+    source_file.write_text(
+        dedent("""\
+        @traceability('KEY')
+        def bar():
+            pass
+        """)
+    )
+    git_repo.index.add(source_file)
+    commit_msg2 = "msg2"
+    git_repo.index.commit(commit_msg2)
+
+    reports = list(collect_traceability_from_directory(tmp_path, tmp_path, config))
+    assert len(reports) == 1
+    actual = reports[0]
 
     assert actual.history == [
         TraceabilityGitHistory(
             commit=mock.ANY,
             author_name=mock.ANY,
             author_date=mock.ANY,
-            message="History test setup: Add a decorator to an existing function",
-            source_code="def second_function():\n    pass",
-        ),
-    ]
-
-
-def test_decorator_function_renamed(traceability_reports):
-    key = "GIT-HISTORY-TEST-3"
-    relevant_reports = [t for t in traceability_reports if t.key == key]
-    assert len(relevant_reports) == 1
-    actual = relevant_reports[0]
-
-    assert actual.history == [
-        TraceabilityGitHistory(
-            commit=mock.ANY,
-            author_name=mock.ANY,
-            author_date=mock.ANY,
-            message="History test setup: Rename an existing function",
-            source_code="def new_function_name():\n    pass",
+            message=commit_msg2,
+            source_code="def bar():\n    pass",
         ),
         TraceabilityGitHistory(
             commit=mock.ANY,
             author_name=mock.ANY,
             author_date=mock.ANY,
-            message="History test setup: Add a function to be renamed",
-            source_code="def original_function_name():\n    pass",
+            message=commit_msg1,
+            source_code="def foo():\n    pass",
         ),
     ]

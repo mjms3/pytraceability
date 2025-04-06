@@ -14,7 +14,7 @@ from pytraceability.discovery import collect_traceability_from_directory
 GIT_HISTORY_TESTS_DIR = Path(__file__).parent / "git_history_tests"
 
 
-class TestKey(Enum):
+class TestKey(str, Enum):
     ADD_NEW_DECORATOR = "add new decorator"
     DECORATOR_FUNCTION_RENAMED = "decorator function renamed"
     DECORATOR_MOVED_TO_ANOTHER_FILE = "decorator moved to another file"
@@ -41,27 +41,29 @@ class FileStatus:
 
 @dataclass
 class ExpectedCommit:
-    commit_number: int
+    msg: str
     function_source_code: str
 
 
 @dataclass
 class CommitState:
-    commit_number: int
+    msg: str
     file_states: list[FileStatus]
 
 
 @dataclass
 class HistoryTestInfo:
+    key: TestKey
     commit_states: list[CommitState]
     expected: list[ExpectedCommit]
 
 
 COMMIT_DETAILS = {
     TestKey.ADD_NEW_DECORATOR: HistoryTestInfo(
+        key=TestKey.ADD_NEW_DECORATOR,
         commit_states=[
             CommitState(
-                commit_number=0,
+                msg="add new decorator",
                 file_states=[
                     FileStatus(
                         Path("file1.py"),
@@ -76,12 +78,13 @@ COMMIT_DETAILS = {
                 ],
             ),
         ],
-        expected=[ExpectedCommit(0, "def foo():\n    pass")],
+        expected=[ExpectedCommit("add new decorator", "def foo():\n    pass")],
     ),
     TestKey.DECORATOR_FUNCTION_RENAMED: HistoryTestInfo(
+        key=TestKey.DECORATOR_FUNCTION_RENAMED,
         commit_states=[
             CommitState(
-                commit_number=0,
+                msg="add new decorator",
                 file_states=[
                     FileStatus(
                         Path("file2.py"),
@@ -96,7 +99,7 @@ COMMIT_DETAILS = {
                 ],
             ),
             CommitState(
-                commit_number=1,
+                msg="rename decorated function",
                 file_states=[
                     FileStatus(
                         Path("file2.py"),
@@ -112,14 +115,15 @@ COMMIT_DETAILS = {
             ),
         ],
         expected=[
-            ExpectedCommit(1, "def bar():\n    pass"),
-            ExpectedCommit(0, "def foo():\n    pass"),
+            ExpectedCommit("rename decorated function", "def bar():\n    pass"),
+            ExpectedCommit("add new decorator", "def foo():\n    pass"),
         ],
     ),
     TestKey.DECORATOR_MOVED_TO_ANOTHER_FILE: HistoryTestInfo(
+        key=TestKey.DECORATOR_MOVED_TO_ANOTHER_FILE,
         commit_states=[
             CommitState(
-                commit_number=0,
+                msg="add new decorator",
                 file_states=[
                     FileStatus(
                         Path("file3.py"),
@@ -134,7 +138,7 @@ COMMIT_DETAILS = {
                 ],
             ),
             CommitState(
-                commit_number=1,
+                msg="move decorator to different function in new file",
                 file_states=[
                     FileStatus(
                         Path("file3.py"),
@@ -159,47 +163,63 @@ COMMIT_DETAILS = {
             ),
         ],
         expected=[
-            ExpectedCommit(1, "def bar():\n    pass"),
-            ExpectedCommit(0, "def foo():\n    pass"),
+            ExpectedCommit(
+                "move decorator to different function in new file",
+                "def bar():\n    pass",
+            ),
+            ExpectedCommit("add new decorator", "def foo():\n    pass"),
         ],
     ),
 }
 
 
 def run_history_test(
-    git_repo: Repo, tmp_path: Path, config: PyTraceabilityConfig, test_key: TestKey
+    git_repo: Repo,
+    tmp_path: Path,
+    config: PyTraceabilityConfig,
+    history_test_info: list[HistoryTestInfo] | HistoryTestInfo,
 ):
-    test_info = COMMIT_DETAILS[test_key]
+    if isinstance(history_test_info, HistoryTestInfo):
+        history_test_info = [history_test_info]
 
-    for commit_state in test_info.commit_states:
-        for file_status in commit_state.file_states:
-            source_file = tmp_path / file_status.file_path_in_repo
-            source_file.write_text(file_status.contents)
-            git_repo.index.add(source_file)
-        git_repo.index.commit(f"Commit {commit_state.commit_number}")
+    for test_info in history_test_info:
+        for commit_state in test_info.commit_states:
+            for file_status in commit_state.file_states:
+                source_file = tmp_path / file_status.file_path_in_repo
+                source_file.write_text(file_status.contents)
+                git_repo.index.add(source_file)
+            git_repo.index.commit(commit_state.msg)
 
     reports = list(collect_traceability_from_directory(tmp_path, tmp_path, config))
-    assert len(reports) == 1
-    actual = reports[0]
+    assert len(reports) == len(history_test_info)
 
-    expected_history = [
-        TraceabilityGitHistory(
-            commit=mock.ANY,
-            author_name=mock.ANY,
-            author_date=mock.ANY,
-            message=f"Commit {expected_commit.commit_number}",
-            source_code=expected_commit.function_source_code,
-        )
-        for expected_commit in test_info.expected
-    ]
-    assert actual.history == expected_history
+    expected_history = {
+        test_info.key: [
+            TraceabilityGitHistory(
+                commit=mock.ANY,
+                author_name=mock.ANY,
+                author_date=mock.ANY,
+                message=e.msg,
+                source_code=e.function_source_code,
+            )
+            for e in test_info.expected
+        ]
+        for test_info in history_test_info
+    }
+    assert {a.key: a.history for a in reports} == expected_history
 
 
 @pytest.mark.parametrize("test_key", list(COMMIT_DETAILS.keys()))
 def test_history(
     git_repo: Repo, tmp_path: Path, config: PyTraceabilityConfig, test_key: TestKey
 ):
-    run_history_test(git_repo, tmp_path, config, test_key)
+    run_history_test(git_repo, tmp_path, config, COMMIT_DETAILS[test_key])
+
+
+def test_run_all_history_tests(
+    git_repo: Repo, tmp_path: Path, config: PyTraceabilityConfig
+):
+    run_history_test(git_repo, tmp_path, config, list(COMMIT_DETAILS.values()))
 
 
 def test_independent_file_paths():

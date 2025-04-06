@@ -28,7 +28,8 @@ def _extract_traceability_from_decorator(decorator: ast.Call) -> Traceability:
         )
     if len(decorator.args) != 1:
         raise InvalidTraceabilityError.from_allowed_message_types(
-            TraceabilityErrorMessages.ONLY_ONE_ARG
+            TraceabilityErrorMessages.ONLY_ONE_ARG,
+            f"Decorator has args: {[getattr(a, 's') or a for a in decorator.args]}",
         )
     if isinstance(decorator.args[0], ast.Constant):
         key = decorator.args[0].s

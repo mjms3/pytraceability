@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from pytraceability.config import (
     PyTraceabilityConfig,
     PyTraceabilityMode,
     get_repo_root,
+    GitHistoryMode,
 )
 from pytraceability.discovery import collect_traceability_from_directory
 
@@ -32,11 +34,22 @@ class OutputFormats(str, Enum):
     type=click.Choice([o.value for o in PyTraceabilityMode]),
     default=PyTraceabilityMode.static_only,
 )
+@click.option(
+    "--git-history-mode",
+    type=click.Choice([o.value for o in GitHistoryMode]),
+    default=GitHistoryMode.NONE,
+)
+@click.option(
+    "--since",
+    type=datetime.fromisoformat,
+)
 def main(
     base_directory: Path,
     decorator_name: str,
     output_format: OutputFormats,
     mode: PyTraceabilityMode,
+    git_history_mode: GitHistoryMode,
+    since: datetime,
 ):
     click.echo(f"Extracting traceability from {base_directory}")
     click.echo(f"Using project root: {base_directory}")
@@ -45,6 +58,8 @@ def main(
         repo_root=get_repo_root(base_directory),
         decorator_name=decorator_name,
         mode=mode,
+        git_history_mode=git_history_mode,
+        since=since,
     )
     for result in collect_traceability_from_directory(
         base_directory,

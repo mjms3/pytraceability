@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 
@@ -26,6 +27,7 @@ class PyTraceabilityConfig:
     exclude_patterns: list[str] = field(default_factory=lambda: [])
     mode: PyTraceabilityMode = PyTraceabilityMode.static_only
     git_history_mode: GitHistoryMode = GitHistoryMode.NONE
+    since: datetime | None = None
 
 
 def find_pyproject_file(path_in_repo: Path) -> Path:

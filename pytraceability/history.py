@@ -53,6 +53,12 @@ def get_line_based_history(
 
     history: dict[str, list[TraceabilityGitHistory]] = {}
     for commit in Repository(str(config.repo_root), order="reverse").traverse_commits():
+        # TODO - handle timezones correctly
+        if (
+            config.since is not None
+            and commit.committer_date.timestamp() < config.since.timestamp()
+        ):
+            break
         current_file_set = set(current_file_for_key.values())
         relevant_files_first = sorted(
             commit.modified_files,
@@ -61,7 +67,11 @@ def get_line_based_history(
 
         current_file_for_key.reset_keys_for_relevant_files(relevant_files_first)
         for modified_file in relevant_files_first:
-            if modified_file.source_code is None or modified_file.new_path is None:
+            if (
+                modified_file.source_code is None
+                or modified_file.new_path is None
+                or not modified_file.new_path.endswith("py")
+            ):
                 continue
             tree = ast.parse(modified_file.source_code, filename=modified_file.new_path)
             extraction_results = TraceabilityVisitor(
@@ -87,9 +97,4 @@ def get_line_based_history(
 
             if all(current_file_for_key.values()):
                 break
-        else:
-            raise ValueError(
-                f"Some traceabbility keys not found: {current_file_for_key}"
-            )
-
     return history

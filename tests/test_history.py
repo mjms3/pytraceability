@@ -17,6 +17,7 @@ GIT_HISTORY_TESTS_DIR = Path(__file__).parent / "git_history_tests"
 class TestKey(Enum):
     ADD_NEW_DECORATOR = "add new decorator"
     DECORATOR_FUNCTION_RENAMED = "decorator function renamed"
+    DECORATOR_MOVED_TO_ANOTHER_FILE = "decorator moved to another file"
 
 
 @pytest.fixture()
@@ -45,48 +46,116 @@ class ExpectedCommit:
 
 
 @dataclass
-class HistoryTestInfo:
+class CommitState:
+    commit_number: int
     file_states: list[FileStatus]
+
+
+@dataclass
+class HistoryTestInfo:
+    commit_states: list[CommitState]
     expected: list[ExpectedCommit]
 
 
 COMMIT_DETAILS = {
     TestKey.ADD_NEW_DECORATOR: HistoryTestInfo(
-        file_states=[
-            FileStatus(
-                Path("file1.py"),
-                dedent(
-                    """\
-                    @traceability('KEY')
-                    def foo():
-                        pass
-                    """
-                ),
+        commit_states=[
+            CommitState(
+                commit_number=0,
+                file_states=[
+                    FileStatus(
+                        Path("file1.py"),
+                        dedent(
+                            f"""\
+                            @traceability('{TestKey.ADD_NEW_DECORATOR}')
+                            def foo():
+                                pass
+                            """
+                        ),
+                    ),
+                ],
             ),
         ],
         expected=[ExpectedCommit(0, "def foo():\n    pass")],
     ),
     TestKey.DECORATOR_FUNCTION_RENAMED: HistoryTestInfo(
-        file_states=[
-            FileStatus(
-                Path("file2.py"),
-                dedent(
-                    """\
-                    @traceability('KEY')
-                    def foo():
-                        pass
-                    """
-                ),
+        commit_states=[
+            CommitState(
+                commit_number=0,
+                file_states=[
+                    FileStatus(
+                        Path("file2.py"),
+                        dedent(
+                            f"""\
+                            @traceability('{TestKey.DECORATOR_FUNCTION_RENAMED}')
+                            def foo():
+                                pass
+                            """
+                        ),
+                    ),
+                ],
             ),
-            FileStatus(
-                Path("file2.py"),
-                dedent(
-                    """\
-                    @traceability('KEY')
-                    def bar():
-                        pass
-                    """
-                ),
+            CommitState(
+                commit_number=1,
+                file_states=[
+                    FileStatus(
+                        Path("file2.py"),
+                        dedent(
+                            f"""\
+                            @traceability('{TestKey.DECORATOR_FUNCTION_RENAMED}')
+                            def bar():
+                                pass
+                            """
+                        ),
+                    ),
+                ],
+            ),
+        ],
+        expected=[
+            ExpectedCommit(1, "def bar():\n    pass"),
+            ExpectedCommit(0, "def foo():\n    pass"),
+        ],
+    ),
+    TestKey.DECORATOR_MOVED_TO_ANOTHER_FILE: HistoryTestInfo(
+        commit_states=[
+            CommitState(
+                commit_number=0,
+                file_states=[
+                    FileStatus(
+                        Path("file3.py"),
+                        dedent(
+                            f"""\
+                            @traceability('{TestKey.DECORATOR_MOVED_TO_ANOTHER_FILE}')
+                            def foo():
+                                pass
+                            """
+                        ),
+                    ),
+                ],
+            ),
+            CommitState(
+                commit_number=1,
+                file_states=[
+                    FileStatus(
+                        Path("file3.py"),
+                        dedent(
+                            """\
+                            def foo():
+                                pass
+                            """
+                        ),
+                    ),
+                    FileStatus(
+                        Path("file4.py"),
+                        dedent(
+                            f"""\
+                            @traceability('{TestKey.DECORATOR_MOVED_TO_ANOTHER_FILE}')
+                            def bar():
+                                pass
+                            """
+                        ),
+                    ),
+                ],
             ),
         ],
         expected=[
@@ -102,11 +171,12 @@ def run_history_test(
 ):
     test_info = COMMIT_DETAILS[test_key]
 
-    for idx, file_status_add_idx in enumerate(test_info.file_states):
-        source_file = tmp_path / file_status_add_idx.file_path_in_repo
-        source_file.write_text(file_status_add_idx.contents)
-        git_repo.index.add(source_file)
-        git_repo.index.commit(f"Commit {idx}")
+    for commit_state in test_info.commit_states:
+        for file_status in commit_state.file_states:
+            source_file = tmp_path / file_status.file_path_in_repo
+            source_file.write_text(file_status.contents)
+            git_repo.index.add(source_file)
+        git_repo.index.commit(f"Commit {commit_state.commit_number}")
 
     reports = list(collect_traceability_from_directory(tmp_path, tmp_path, config))
     assert len(reports) == 1
@@ -125,14 +195,11 @@ def run_history_test(
     assert actual.history == expected_history
 
 
-def test_history(git_repo: Repo, tmp_path: Path, config: PyTraceabilityConfig):
-    run_history_test(git_repo, tmp_path, config, TestKey.ADD_NEW_DECORATOR)
-
-
-def test_decorator_function_renamed(
-    git_repo: Repo, tmp_path: Path, config: PyTraceabilityConfig
+@pytest.mark.parametrize("test_key", list(COMMIT_DETAILS.keys()))
+def test_history(
+    git_repo: Repo, tmp_path: Path, config: PyTraceabilityConfig, test_key: TestKey
 ):
-    run_history_test(git_repo, tmp_path, config, TestKey.DECORATOR_FUNCTION_RENAMED)
+    run_history_test(git_repo, tmp_path, config, test_key)
 
 
 def test_independent_file_paths():
@@ -145,7 +212,11 @@ def test_independent_file_paths():
     in a separate test case to test independence of the history processing code
     """
     test_case_to_file_paths = {
-        key: {file_status.file_path_in_repo for file_status in test_info.file_states}
+        key: {
+            file_status.file_path_in_repo
+            for commit_state in test_info.commit_states
+            for file_status in commit_state.file_states
+        }
         for key, test_info in COMMIT_DETAILS.items()
     }
 

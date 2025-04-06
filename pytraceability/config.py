@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from pydantic import BaseModel, Field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -20,11 +20,10 @@ class GitHistoryMode(str, Enum):
     FUNCTION_HISTORY = "function-history"
 
 
-@dataclass(frozen=True)
-class PyTraceabilityConfig:
+class PyTraceabilityConfig(BaseModel):
     repo_root: Path
     decorator_name: str = STANDARD_DECORATOR_NAME
-    exclude_patterns: list[str] = field(default_factory=lambda: [])
+    exclude_patterns: list[str] = Field(default_factory=list)
     mode: PyTraceabilityMode = PyTraceabilityMode.static_only
     git_history_mode: GitHistoryMode = GitHistoryMode.NONE
     since: datetime | None = None

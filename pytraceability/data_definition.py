@@ -1,24 +1,18 @@
-from dataclasses import dataclass, field, asdict
+from pydantic import BaseModel, Field
 from datetime import datetime
-
 from pathlib import Path
 from typing import Mapping, Any, Generator
 
 MetaDataType = Mapping[str, Any]
 
 
-@dataclass(eq=False)
-class Traceability:
+class Traceability(BaseModel):
     key: str
-    metadata: MetaDataType = field(default_factory=dict)
+    metadata: MetaDataType = Field(default_factory=dict)
     is_complete: bool = True
 
-    def __eq__(self, other: Any) -> bool:
-        return self.key == other.key and self.metadata == other.metadata
 
-
-@dataclass
-class TraceabilityGitHistory:
+class TraceabilityGitHistory(BaseModel):
     commit: str
     author_name: str | None
     author_date: datetime
@@ -26,8 +20,7 @@ class TraceabilityGitHistory:
     source_code: str | None
 
 
-@dataclass
-class CurrentLocationRecord:
+class CurrentLocationRecord(BaseModel):
     file_path: Path
     function_name: str
     line_number: int
@@ -35,12 +28,10 @@ class CurrentLocationRecord:
     source_code: str | None
 
 
-@dataclass
 class TraceabilityReport(Traceability, CurrentLocationRecord):
     history: list[TraceabilityGitHistory] | None = None
 
 
-@dataclass
 class ExtractionResult(CurrentLocationRecord):
     traceability_data: list[Traceability]
 
@@ -51,10 +42,10 @@ class ExtractionResult(CurrentLocationRecord):
 class ExtractionResultsList(list[ExtractionResult]):
     def _flat(self) -> Generator[TraceabilityReport, None, None]:
         for extraction_result in self:
-            extraction_result_as_dict = asdict(extraction_result)
+            extraction_result_as_dict = extraction_result.dict()
             extraction_result_as_dict.pop("traceability_data")
             for traceability_data in extraction_result.traceability_data:
-                kwargs = asdict(traceability_data)
+                kwargs = traceability_data.dict()
                 kwargs.update(extraction_result_as_dict)
                 yield TraceabilityReport(**kwargs)
 

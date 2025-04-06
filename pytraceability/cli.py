@@ -13,7 +13,7 @@ from pytraceability.config import (
     get_repo_root,
     GitHistoryMode,
 )
-from pytraceability.discovery import collect_traceability_from_directory
+from pytraceability.discovery import collect_output_data
 
 
 class OutputFormats(str, Enum):
@@ -61,7 +61,7 @@ def main(
         git_history_mode=git_history_mode,
         since=since,
     )
-    for result in collect_traceability_from_directory(
+    for result in collect_output_data(
         base_directory,
         base_directory,
         config,

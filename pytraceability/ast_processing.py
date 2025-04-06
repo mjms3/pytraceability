@@ -45,7 +45,9 @@ def _extract_traceability_from_decorator(decorator: ast.Call) -> Traceability:
             kwargs[keyword.arg] = UNKNOWN
             able_to_extract_statically = False
 
-    return Traceability(key, kwargs, able_to_extract_statically)
+    return Traceability(
+        key=key, metadata=kwargs, is_complete=able_to_extract_statically
+    )
 
 
 class TraceabilityVisitor(ast.NodeVisitor):

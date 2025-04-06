@@ -1,23 +1,22 @@
 import fnmatch
-from dataclasses import replace
 from pathlib import Path
 from typing import Generator
 
 from pytraceability.ast_processing import extract_traceability_from_file_using_ast
-from pytraceability.exceptions import (
-    TraceabilityErrorMessages,
-    InvalidTraceabilityError,
+from pytraceability.config import (
+    PyTraceabilityMode,
+    PyTraceabilityConfig,
+    PROJECT_NAME,
+    GitHistoryMode,
 )
 from pytraceability.custom import pytraceability
 from pytraceability.data_definition import (
     ExtractionResultsList,
     TraceabilityReport,
 )
-from pytraceability.config import (
-    PyTraceabilityMode,
-    PyTraceabilityConfig,
-    PROJECT_NAME,
-    GitHistoryMode,
+from pytraceability.exceptions import (
+    TraceabilityErrorMessages,
+    InvalidTraceabilityError,
 )
 from pytraceability.history import get_line_based_history
 from pytraceability.import_processing import extract_traceabilities_using_module_import
@@ -31,12 +30,12 @@ def _file_is_excluded(path: Path, exclude_file_patterns: list[str]) -> bool:
     "PYTRACEABILITY-1",
     info=f"{PROJECT_NAME} searches a directory for traceability decorators",
 )
-def collect_traceability_from_directory(
+def collect_output_data(
     dir_path: Path,
     project_root: Path,
     config: PyTraceabilityConfig,
 ) -> Generator[TraceabilityReport, None, None]:
-    traceability_reports = _collect_traceability_from_directory(
+    traceability_reports = collect_traceability_from_directory(
         dir_path, project_root, config
     )
     if config.git_history_mode == GitHistoryMode.NONE:
@@ -45,12 +44,12 @@ def collect_traceability_from_directory(
         traceability_report_list = list(traceability_reports)
         git_history = get_line_based_history(traceability_report_list, config)
         for report in traceability_report_list:
-            yield replace(report, history=git_history.get(report.key))
+            yield report.model_copy(update={"history": git_history.get(report.key)})
     else:  # pragma: no cover
         raise ValueError(f"Unsupported git history mode: {config.git_history_mode}")
 
 
-def _collect_traceability_from_directory(
+def collect_traceability_from_directory(
     dir_path: Path,
     project_root: Path,
     config: PyTraceabilityConfig,

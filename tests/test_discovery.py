@@ -1,23 +1,21 @@
-from dataclasses import replace
 from pathlib import Path
 from types import ModuleType
-from unittest import mock
 
 import pytest
 
-from pytraceability.discovery import (
-    collect_traceability_from_directory,
-)
 from pytraceability.common import (
     UNKNOWN,
-)
-from pytraceability.exceptions import InvalidTraceabilityError
-from pytraceability.data_definition import (
-    TraceabilityReport,
 )
 from pytraceability.config import (
     PyTraceabilityMode,
 )
+from pytraceability.data_definition import (
+    TraceabilityReport,
+)
+from pytraceability.discovery import (
+    collect_output_data,
+)
+from pytraceability.exceptions import InvalidTraceabilityError
 from tests.examples import (
     function_with_traceability,
     function_with_traceability_key_in_a_variable,
@@ -30,6 +28,7 @@ from tests.examples import (
     method_on_a_class_with_key_in_a_variable,
 )
 from tests.factories import TEST_ROOT, TEST_CONFIG, _test_from_module
+from tests.utils import M
 
 
 @pytest.mark.parametrize(
@@ -63,7 +62,9 @@ def test_key_must_be_static(module):
 
 @pytest.mark.raises(exception=InvalidTraceabilityError)
 def test_static_mode_errors_if_unable_to_get_traceability_data_statically() -> None:
-    static_only_config = replace(TEST_CONFIG, mode=PyTraceabilityMode.static_only)
+    static_only_config = TEST_CONFIG.model_copy(
+        update={"mode": PyTraceabilityMode.static_only}
+    )
     _test_from_module(
         function_with_traceability_key_in_a_variable, config=static_only_config
     )
@@ -91,26 +92,24 @@ def test_closure_with_dynamic_metadata():
 def test_collect_from_directory():
     file_path = Path(__file__).parent / "examples/separate_directory"
 
-    actual = list(
-        collect_traceability_from_directory(file_path, TEST_ROOT, TEST_CONFIG)
-    )
+    actual = list(collect_output_data(file_path, TEST_ROOT, TEST_CONFIG))
     expected = [
-        TraceabilityReport(
+        M(
+            TraceabilityReport,
             file_path=file_path / "file1.py",
             function_name="foo",
             line_number=5,
             end_line_number=6,
-            source_code=mock.ANY,
             key="KEY-1",
             metadata={},
             is_complete=True,
         ),
-        TraceabilityReport(
+        M(
+            TraceabilityReport,
             file_path=file_path / "file2.py",
             function_name="foo",
             line_number=5,
             end_line_number=6,
-            source_code=mock.ANY,
             key="KEY-2",
             metadata={},
             is_complete=True,
@@ -121,6 +120,6 @@ def test_collect_from_directory():
 
 def test_filename_exclusion():
     file_path = Path(function_with_traceability.__file__).parent
-    config = replace(TEST_CONFIG, exclude_patterns=["*test*"])
-    actual = list(collect_traceability_from_directory(file_path, TEST_ROOT, config))
+    config = TEST_CONFIG.model_copy(update={"exclude_patterns": ["*test*"]})
+    actual = list(collect_output_data(file_path, TEST_ROOT, config))
     assert actual == []

@@ -1,4 +1,3 @@
-from dataclasses import replace
 from importlib import util
 from pathlib import Path
 from typing import Generator
@@ -7,11 +6,11 @@ from pytraceability.common import (
     Traceability,
 )
 from pytraceability.config import PROJECT_NAME
+from pytraceability.custom import pytraceability
+from pytraceability.data_definition import ExtractionResult
 from pytraceability.exceptions import (
     InvalidTraceabilityError,
 )
-from pytraceability.custom import pytraceability
-from pytraceability.data_definition import ExtractionResult
 
 
 def _get_module_name(
@@ -67,6 +66,6 @@ def extract_traceabilities_using_module_import(
     for extraction in extraction_results:
         try:
             traceability_data = _extract_traceability(module, extraction.function_name)
-            yield replace(extraction, traceability_data=traceability_data)
+            yield extraction.model_copy(update={"traceability_data": traceability_data})
         except AttributeError:
             yield extraction

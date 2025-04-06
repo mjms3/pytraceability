@@ -1,15 +1,15 @@
-from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from textwrap import dedent
-from unittest import mock
 
 import pytest
 from git import Repo
+from pydantic import BaseModel
 
 from pytraceability.config import GitHistoryMode, PyTraceabilityConfig
 from pytraceability.data_definition import TraceabilityGitHistory
-from pytraceability.discovery import collect_traceability_from_directory
+from pytraceability.discovery import collect_output_data
+from tests.utils import M
 
 GIT_HISTORY_TESTS_DIR = Path(__file__).parent / "git_history_tests"
 
@@ -33,26 +33,22 @@ def config(tmp_path: Path) -> PyTraceabilityConfig:
     )
 
 
-@dataclass
-class FileStatus:
+class FileStatus(BaseModel):
     file_path_in_repo: Path
     contents: str
 
 
-@dataclass
-class ExpectedCommit:
+class ExpectedCommit(BaseModel):
     msg: str
     function_source_code: str
 
 
-@dataclass
-class CommitState:
+class CommitState(BaseModel):
     msg: str
     file_states: list[FileStatus]
 
 
-@dataclass
-class HistoryTestInfo:
+class HistoryTestInfo(BaseModel):
     key: ValidTestNames
     commit_states: list[CommitState]
     expected: list[ExpectedCommit]
@@ -66,8 +62,8 @@ COMMIT_DETAILS = {
                 msg="add new decorator",
                 file_states=[
                     FileStatus(
-                        Path("file1.py"),
-                        dedent(
+                        file_path_in_repo=Path("file1.py"),
+                        contents=dedent(
                             f"""\
                             @traceability('{ValidTestNames.ADD_NEW_DECORATOR}')
                             def foo():
@@ -78,7 +74,12 @@ COMMIT_DETAILS = {
                 ],
             ),
         ],
-        expected=[ExpectedCommit("add new decorator", "def foo():\n    pass")],
+        expected=[
+            ExpectedCommit(
+                msg="add new decorator",
+                function_source_code="def foo():\n    pass",
+            )
+        ],
     ),
     ValidTestNames.DECORATOR_FUNCTION_RENAMED: HistoryTestInfo(
         key=ValidTestNames.DECORATOR_FUNCTION_RENAMED,
@@ -87,8 +88,8 @@ COMMIT_DETAILS = {
                 msg="add new decorator",
                 file_states=[
                     FileStatus(
-                        Path("file2.py"),
-                        dedent(
+                        file_path_in_repo=Path("file2.py"),
+                        contents=dedent(
                             f"""\
                             @traceability('{ValidTestNames.DECORATOR_FUNCTION_RENAMED}')
                             def foo():
@@ -102,8 +103,8 @@ COMMIT_DETAILS = {
                 msg="rename decorated function",
                 file_states=[
                     FileStatus(
-                        Path("file2.py"),
-                        dedent(
+                        file_path_in_repo=Path("file2.py"),
+                        contents=dedent(
                             f"""\
                             @traceability('{ValidTestNames.DECORATOR_FUNCTION_RENAMED}')
                             def bar():
@@ -115,8 +116,14 @@ COMMIT_DETAILS = {
             ),
         ],
         expected=[
-            ExpectedCommit("rename decorated function", "def bar():\n    pass"),
-            ExpectedCommit("add new decorator", "def foo():\n    pass"),
+            ExpectedCommit(
+                msg="rename decorated function",
+                function_source_code="def bar():\n    pass",
+            ),
+            ExpectedCommit(
+                msg="add new decorator",
+                function_source_code="def foo():\n    pass",
+            ),
         ],
     ),
     ValidTestNames.DECORATOR_MOVED_TO_ANOTHER_FILE: HistoryTestInfo(
@@ -126,8 +133,8 @@ COMMIT_DETAILS = {
                 msg="add new decorator",
                 file_states=[
                     FileStatus(
-                        Path("file3.py"),
-                        dedent(
+                        file_path_in_repo=Path("file3.py"),
+                        contents=dedent(
                             f"""\
                             @traceability('{ValidTestNames.DECORATOR_MOVED_TO_ANOTHER_FILE}')
                             def foo():
@@ -141,8 +148,8 @@ COMMIT_DETAILS = {
                 msg="move decorator to different function in new file",
                 file_states=[
                     FileStatus(
-                        Path("file3.py"),
-                        dedent(
+                        file_path_in_repo=Path("file3.py"),
+                        contents=dedent(
                             """\
                             def foo():
                                 pass
@@ -150,8 +157,8 @@ COMMIT_DETAILS = {
                         ),
                     ),
                     FileStatus(
-                        Path("file4.py"),
-                        dedent(
+                        file_path_in_repo=Path("file4.py"),
+                        contents=dedent(
                             f"""\
                             @traceability('{ValidTestNames.DECORATOR_MOVED_TO_ANOTHER_FILE}')
                             def bar():
@@ -164,10 +171,13 @@ COMMIT_DETAILS = {
         ],
         expected=[
             ExpectedCommit(
-                "move decorator to different function in new file",
-                "def bar():\n    pass",
+                msg="move decorator to different function in new file",
+                function_source_code="def bar():\n    pass",
             ),
-            ExpectedCommit("add new decorator", "def foo():\n    pass"),
+            ExpectedCommit(
+                msg="add new decorator",
+                function_source_code="def foo():\n    pass",
+            ),
         ],
     ),
 }
@@ -190,15 +200,13 @@ def run_history_test(
                 git_repo.index.add(source_file)
             git_repo.index.commit(commit_state.msg)
 
-    reports = list(collect_traceability_from_directory(tmp_path, tmp_path, config))
+    reports = list(collect_output_data(tmp_path, tmp_path, config))
     assert len(reports) == len(history_test_info)
 
     expected_history = {
         test_info.key: [
-            TraceabilityGitHistory(
-                commit=mock.ANY,
-                author_name=mock.ANY,
-                author_date=mock.ANY,
+            M(
+                TraceabilityGitHistory,
                 message=e.msg,
                 source_code=e.function_source_code,
             )

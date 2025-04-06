@@ -26,8 +26,8 @@ def test_traceability_decorators_stack():
         return x + 1
 
     assert getattr(foo, "__traceability__") == [
-        Traceability("KEY 1"),
-        Traceability("KEY 2"),
+        Traceability(key="KEY 1"),
+        Traceability(key="KEY 2"),
     ]
 
 

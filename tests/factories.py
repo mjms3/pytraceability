@@ -1,6 +1,5 @@
 from pathlib import Path
 from types import ModuleType
-from unittest import mock
 
 from pytraceability.config import (
     PyTraceabilityConfig,
@@ -13,6 +12,7 @@ from pytraceability.data_definition import (
     TraceabilityReport,
 )
 from pytraceability.discovery import extract_traceability_from_file
+from tests.utils import M
 
 TEST_ROOT = Path(__file__).parent
 THIS_REPO_ROOT = get_repo_root(TEST_ROOT)
@@ -36,12 +36,12 @@ def _test_from_module(
     file_path = Path(module.__file__)
     actual = list(extract_traceability_from_file(file_path, TEST_ROOT, config))
     expected = [
-        TraceabilityReport(
+        M(
+            TraceabilityReport,
             file_path=file_path,
             function_name=function_name,
             line_number=5 + line_num_offset,
             end_line_number=6 + line_num_offset,
-            source_code=mock.ANY,
             key="A key",
             metadata=metadata or {},
             is_complete=is_complete,

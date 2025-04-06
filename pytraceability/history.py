@@ -53,22 +53,14 @@ def get_line_based_history(
 
     history: dict[str, list[TraceabilityGitHistory]] = {}
     for commit in Repository(str(config.repo_root), order="reverse").traverse_commits():
-        relevant_files = list(
-            {
-                f
-                for f in commit.modified_files
-                if f.new_path in current_file_for_key.values()
-            }
+        current_file_set = set(current_file_for_key.values())
+        relevant_files_first = sorted(
+            commit.modified_files,
+            key=lambda f: f.new_path in current_file_set,
         )
-        other_files = list(
-            {
-                f
-                for f in commit.modified_files
-                if f.new_path not in current_file_for_key.values()
-            }
-        )
-        current_file_for_key.reset_keys_for_relevant_files(relevant_files + other_files)
-        for modified_file in relevant_files + other_files:
+
+        current_file_for_key.reset_keys_for_relevant_files(relevant_files_first)
+        for modified_file in relevant_files_first:
             if modified_file.source_code is None or modified_file.new_path is None:
                 continue
             tree = ast.parse(modified_file.source_code, filename=modified_file.new_path)

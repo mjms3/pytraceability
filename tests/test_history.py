@@ -14,7 +14,7 @@ from pytraceability.discovery import collect_traceability_from_directory
 GIT_HISTORY_TESTS_DIR = Path(__file__).parent / "git_history_tests"
 
 
-class TestKey(str, Enum):
+class ValidTestNames(str, Enum):
     ADD_NEW_DECORATOR = "add new decorator"
     DECORATOR_FUNCTION_RENAMED = "decorator function renamed"
     DECORATOR_MOVED_TO_ANOTHER_FILE = "decorator moved to another file"
@@ -53,14 +53,14 @@ class CommitState:
 
 @dataclass
 class HistoryTestInfo:
-    key: TestKey
+    key: ValidTestNames
     commit_states: list[CommitState]
     expected: list[ExpectedCommit]
 
 
 COMMIT_DETAILS = {
-    TestKey.ADD_NEW_DECORATOR: HistoryTestInfo(
-        key=TestKey.ADD_NEW_DECORATOR,
+    ValidTestNames.ADD_NEW_DECORATOR: HistoryTestInfo(
+        key=ValidTestNames.ADD_NEW_DECORATOR,
         commit_states=[
             CommitState(
                 msg="add new decorator",
@@ -69,7 +69,7 @@ COMMIT_DETAILS = {
                         Path("file1.py"),
                         dedent(
                             f"""\
-                            @traceability('{TestKey.ADD_NEW_DECORATOR}')
+                            @traceability('{ValidTestNames.ADD_NEW_DECORATOR}')
                             def foo():
                                 pass
                             """
@@ -80,8 +80,8 @@ COMMIT_DETAILS = {
         ],
         expected=[ExpectedCommit("add new decorator", "def foo():\n    pass")],
     ),
-    TestKey.DECORATOR_FUNCTION_RENAMED: HistoryTestInfo(
-        key=TestKey.DECORATOR_FUNCTION_RENAMED,
+    ValidTestNames.DECORATOR_FUNCTION_RENAMED: HistoryTestInfo(
+        key=ValidTestNames.DECORATOR_FUNCTION_RENAMED,
         commit_states=[
             CommitState(
                 msg="add new decorator",
@@ -90,7 +90,7 @@ COMMIT_DETAILS = {
                         Path("file2.py"),
                         dedent(
                             f"""\
-                            @traceability('{TestKey.DECORATOR_FUNCTION_RENAMED}')
+                            @traceability('{ValidTestNames.DECORATOR_FUNCTION_RENAMED}')
                             def foo():
                                 pass
                             """
@@ -105,7 +105,7 @@ COMMIT_DETAILS = {
                         Path("file2.py"),
                         dedent(
                             f"""\
-                            @traceability('{TestKey.DECORATOR_FUNCTION_RENAMED}')
+                            @traceability('{ValidTestNames.DECORATOR_FUNCTION_RENAMED}')
                             def bar():
                                 pass
                             """
@@ -119,8 +119,8 @@ COMMIT_DETAILS = {
             ExpectedCommit("add new decorator", "def foo():\n    pass"),
         ],
     ),
-    TestKey.DECORATOR_MOVED_TO_ANOTHER_FILE: HistoryTestInfo(
-        key=TestKey.DECORATOR_MOVED_TO_ANOTHER_FILE,
+    ValidTestNames.DECORATOR_MOVED_TO_ANOTHER_FILE: HistoryTestInfo(
+        key=ValidTestNames.DECORATOR_MOVED_TO_ANOTHER_FILE,
         commit_states=[
             CommitState(
                 msg="add new decorator",
@@ -129,7 +129,7 @@ COMMIT_DETAILS = {
                         Path("file3.py"),
                         dedent(
                             f"""\
-                            @traceability('{TestKey.DECORATOR_MOVED_TO_ANOTHER_FILE}')
+                            @traceability('{ValidTestNames.DECORATOR_MOVED_TO_ANOTHER_FILE}')
                             def foo():
                                 pass
                             """
@@ -153,7 +153,7 @@ COMMIT_DETAILS = {
                         Path("file4.py"),
                         dedent(
                             f"""\
-                            @traceability('{TestKey.DECORATOR_MOVED_TO_ANOTHER_FILE}')
+                            @traceability('{ValidTestNames.DECORATOR_MOVED_TO_ANOTHER_FILE}')
                             def bar():
                                 pass
                             """
@@ -211,7 +211,10 @@ def run_history_test(
 
 @pytest.mark.parametrize("test_key", list(COMMIT_DETAILS.keys()))
 def test_history(
-    git_repo: Repo, tmp_path: Path, config: PyTraceabilityConfig, test_key: TestKey
+    git_repo: Repo,
+    tmp_path: Path,
+    config: PyTraceabilityConfig,
+    test_key: ValidTestNames,
 ):
     run_history_test(git_repo, tmp_path, config, COMMIT_DETAILS[test_key])
 

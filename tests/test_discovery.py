@@ -1,3 +1,4 @@
+from operator import attrgetter
 from pathlib import Path
 from types import ModuleType
 
@@ -92,7 +93,9 @@ def test_closure_with_dynamic_metadata():
 def test_collect_from_directory():
     file_path = Path(__file__).parent / "examples/separate_directory"
 
-    actual = list(collect_output_data(file_path, TEST_ROOT, TEST_CONFIG))
+    actual = sorted(
+        collect_output_data(file_path, TEST_ROOT, TEST_CONFIG), key=attrgetter("key")
+    )
     expected = [
         M(
             TraceabilityReport,

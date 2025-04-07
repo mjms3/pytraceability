@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "::add-path::${HOME}/.local/bin"
+
+    - name: Install dependencies
+      run: poetry install
+
+    - name: Run ruff format check
+      run: poetry run ruff .
+
+    - name: Run pyright
+      run: poetry run pyright
+
+    - name: Run pytest
+      run: poetry run pytest

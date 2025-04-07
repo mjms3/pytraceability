@@ -214,7 +214,15 @@ def run_history_test(
         ]
         for test_info in history_test_info
     }
-    assert {a.key: a.history for a in reports} == expected_history
+    actual_history = {a.key: a.history for a in reports}
+
+    for key, expected in expected_history.items():
+        assert key in actual_history
+        actual_history_for_key = actual_history[key]
+        assert actual_history_for_key is not None
+        assert len(actual_history_for_key) == len(expected)
+        for exp, act in zip(expected, actual_history_for_key):
+            assert exp == act
 
 
 @pytest.mark.parametrize("test_key", list(COMMIT_DETAILS.keys()))

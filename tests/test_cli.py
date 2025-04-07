@@ -46,7 +46,7 @@ def test_cli(isatty, output_format, expected_output):
         mock_get_text_stream.return_value.isatty.return_value = isatty
         result = runner.invoke(main, argv)
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.stderr
     assert result.output.strip().split(os.linesep) == [
         line.format(base_dir=base_dir) for line in expected_output
     ]

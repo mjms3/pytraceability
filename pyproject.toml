@@ -15,6 +15,9 @@ dependencies = [
     "pydantic (>=2.11.2,<3.0.0)"
 ]
 
+[tool.poetry]
+package-mode = false
+
 [tool.pyright]
 venvPath = "."
 venv = ".venv"

@@ -2,6 +2,7 @@ import os
 import sys
 from datetime import datetime
 from enum import Enum
+from operator import attrgetter
 from pathlib import Path
 
 import click
@@ -63,10 +64,13 @@ def main(
         since=since,
     )
 
-    for result in collect_output_data(
-        base_directory,
-        base_directory,
-        config,
+    for result in sorted(
+        collect_output_data(
+            base_directory,
+            base_directory,
+            config,
+        ),
+        key=attrgetter("key"),
     ):
         if output_format == OutputFormats.KEY_ONLY:
             click.echo(result.key)

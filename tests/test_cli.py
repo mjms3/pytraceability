@@ -39,7 +39,7 @@ def test_cli(isatty, output_format, expected_output):
     argv = [
         f"--base-directory={base_dir}",
         "--decorator-name=traceability",
-        f"--output-format={output_format}",
+        f"--output-format={output_format.value}",
     ]
     runner = CliRunner()
     with patch("click.get_text_stream") as mock_get_text_stream:

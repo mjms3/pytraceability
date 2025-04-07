@@ -16,6 +16,7 @@ dependencies = [
 ]
 
 [tool.poetry]
+package-mode=false
 
 [tool.pyright]
 venvPath = "."

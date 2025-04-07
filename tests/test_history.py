@@ -1,4 +1,3 @@
-from enum import Enum
 from pathlib import Path
 from textwrap import dedent
 
@@ -14,10 +13,9 @@ from tests.utils import M
 GIT_HISTORY_TESTS_DIR = Path(__file__).parent / "git_history_tests"
 
 
-class ValidTestNames(str, Enum):
-    ADD_NEW_DECORATOR = "add new decorator"
-    DECORATOR_FUNCTION_RENAMED = "decorator function renamed"
-    DECORATOR_MOVED_TO_ANOTHER_FILE = "decorator moved to another file"
+ADD_NEW_DECORATOR = "add new decorator"
+DECORATOR_FUNCTION_RENAMED = "decorator function renamed"
+DECORATOR_MOVED_TO_ANOTHER_FILE = "decorator moved to another file"
 
 
 @pytest.fixture()
@@ -49,14 +47,14 @@ class CommitState(BaseModel):
 
 
 class HistoryTestInfo(BaseModel):
-    key: ValidTestNames
+    test_name: str
     commit_states: list[CommitState]
     expected: list[ExpectedCommit]
 
 
 COMMIT_DETAILS = {
-    ValidTestNames.ADD_NEW_DECORATOR: HistoryTestInfo(
-        key=ValidTestNames.ADD_NEW_DECORATOR,
+    ADD_NEW_DECORATOR: HistoryTestInfo(
+        test_name=ADD_NEW_DECORATOR,
         commit_states=[
             CommitState(
                 msg="add new decorator",
@@ -65,7 +63,7 @@ COMMIT_DETAILS = {
                         file_path_in_repo=Path("file1.py"),
                         contents=dedent(
                             f"""\
-                            @traceability('{ValidTestNames.ADD_NEW_DECORATOR}')
+                            @traceability('{ADD_NEW_DECORATOR}')
                             def foo():
                                 pass
                             """
@@ -81,8 +79,8 @@ COMMIT_DETAILS = {
             )
         ],
     ),
-    ValidTestNames.DECORATOR_FUNCTION_RENAMED: HistoryTestInfo(
-        key=ValidTestNames.DECORATOR_FUNCTION_RENAMED,
+    DECORATOR_FUNCTION_RENAMED: HistoryTestInfo(
+        test_name=DECORATOR_FUNCTION_RENAMED,
         commit_states=[
             CommitState(
                 msg="add new decorator",
@@ -91,7 +89,7 @@ COMMIT_DETAILS = {
                         file_path_in_repo=Path("file2.py"),
                         contents=dedent(
                             f"""\
-                            @traceability('{ValidTestNames.DECORATOR_FUNCTION_RENAMED}')
+                            @traceability('{DECORATOR_FUNCTION_RENAMED}')
                             def foo():
                                 pass
                             """
@@ -106,7 +104,7 @@ COMMIT_DETAILS = {
                         file_path_in_repo=Path("file2.py"),
                         contents=dedent(
                             f"""\
-                            @traceability('{ValidTestNames.DECORATOR_FUNCTION_RENAMED}')
+                            @traceability('{DECORATOR_FUNCTION_RENAMED}')
                             def bar():
                                 pass
                             """
@@ -126,8 +124,8 @@ COMMIT_DETAILS = {
             ),
         ],
     ),
-    ValidTestNames.DECORATOR_MOVED_TO_ANOTHER_FILE: HistoryTestInfo(
-        key=ValidTestNames.DECORATOR_MOVED_TO_ANOTHER_FILE,
+    DECORATOR_MOVED_TO_ANOTHER_FILE: HistoryTestInfo(
+        test_name=DECORATOR_MOVED_TO_ANOTHER_FILE,
         commit_states=[
             CommitState(
                 msg="add new decorator",
@@ -136,7 +134,7 @@ COMMIT_DETAILS = {
                         file_path_in_repo=Path("file3.py"),
                         contents=dedent(
                             f"""\
-                            @traceability('{ValidTestNames.DECORATOR_MOVED_TO_ANOTHER_FILE}')
+                            @traceability('{DECORATOR_MOVED_TO_ANOTHER_FILE}')
                             def foo():
                                 pass
                             """
@@ -160,7 +158,7 @@ COMMIT_DETAILS = {
                         file_path_in_repo=Path("file4.py"),
                         contents=dedent(
                             f"""\
-                            @traceability('{ValidTestNames.DECORATOR_MOVED_TO_ANOTHER_FILE}')
+                            @traceability('{DECORATOR_MOVED_TO_ANOTHER_FILE}')
                             def bar():
                                 pass
                             """
@@ -204,7 +202,7 @@ def run_history_test(
     assert len(reports) == len(history_test_info)
 
     expected_history = {
-        test_info.key: [
+        test_info.test_name: [
             M(
                 TraceabilityGitHistory,
                 message=e.msg,
@@ -230,7 +228,7 @@ def test_history(
     git_repo: Repo,
     tmp_path: Path,
     config: PyTraceabilityConfig,
-    test_key: ValidTestNames,
+    test_key: str,
 ):
     run_history_test(git_repo, tmp_path, config, COMMIT_DETAILS[test_key])
 

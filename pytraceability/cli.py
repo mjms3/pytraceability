@@ -17,8 +17,8 @@ from pytraceability.discovery import collect_output_data
 
 
 class OutputFormats(str, Enum):
-    FULL = "full"
     KEY_ONLY = "key-only"
+    JSON = "json"
 
 
 @click.command()
@@ -27,7 +27,7 @@ class OutputFormats(str, Enum):
 @click.option(
     "--output-format",
     type=click.Choice([o.value for o in OutputFormats]),
-    default=OutputFormats.FULL,
+    default=OutputFormats.KEY_ONLY,
 )
 @click.option(
     "--mode",
@@ -51,8 +51,9 @@ def main(
     git_history_mode: GitHistoryMode,
     since: datetime,
 ):
-    click.echo(f"Extracting traceability from {base_directory}")
-    click.echo(f"Using project root: {base_directory}")
+    if click.get_text_stream("stdout").isatty():
+        click.echo(f"Extracting traceability from {base_directory}")
+        click.echo(f"Using project root: {base_directory}")
 
     config = PyTraceabilityConfig(
         repo_root=get_repo_root(base_directory),
@@ -61,16 +62,16 @@ def main(
         git_history_mode=git_history_mode,
         since=since,
     )
+
     for result in collect_output_data(
         base_directory,
         base_directory,
         config,
     ):
-        if output_format == OutputFormats.FULL:  # pragma: no cover
-            # This is temporary and for debugging only
-            click.echo(result)
-        elif output_format == OutputFormats.KEY_ONLY:
+        if output_format == OutputFormats.KEY_ONLY:
             click.echo(result.key)
+        elif output_format == OutputFormats.JSON:
+            click.echo(result.model_dump_json())
         else:  # pragma: no cover
             raise ValueError(f"Unknown output format: {output_format}")
 

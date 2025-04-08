@@ -13,6 +13,7 @@ from pytraceability.config import (
     PyTraceabilityMode,
     get_repo_root,
     GitHistoryMode,
+    find_pyproject_file,
 )
 from pytraceability.discovery import collect_output_data
 from pytraceability.logging import setup_logging  # Import logging setup
@@ -46,6 +47,11 @@ class OutputFormats(str, Enum):
     type=datetime.fromisoformat,
 )
 @click.option(
+    "--pyproject-file",
+    type=Path,
+    help="Path to a pyproject.toml file to load configuration from.",
+)
+@click.option(
     "-v",
     "--verbose",
     count=True,
@@ -58,6 +64,7 @@ def main(
     mode: PyTraceabilityMode,
     git_history_mode: GitHistoryMode,
     since: datetime,
+    pyproject_file: Path,
     verbose: int,
 ):
     setup_logging(verbose)
@@ -66,13 +73,16 @@ def main(
         click.echo(f"Extracting traceability from {base_directory}")
         click.echo(f"Using project root: {base_directory}")
 
-    config = PyTraceabilityConfig(
-        repo_root=get_repo_root(base_directory),
-        decorator_name=decorator_name,
-        mode=mode,
-        git_history_mode=git_history_mode,
-        since=since,
-    )
+    pyproject_file_to_use = pyproject_file or find_pyproject_file(base_directory)
+
+    if pyproject_file_to_use:
+        config = PyTraceabilityConfig.from_pyproject_toml(pyproject_file_to_use)
+    else:
+        config = PyTraceabilityConfig(repo_root=get_repo_root(base_directory))
+    config.decorator_name = decorator_name
+    config.mode = mode
+    config.git_history_mode = git_history_mode
+    config.since = since
 
     for result in sorted(
         collect_output_data(

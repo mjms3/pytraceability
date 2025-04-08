@@ -32,6 +32,17 @@ class PyTraceabilityConfig(BaseModel):
     git_history_mode: GitHistoryMode = GitHistoryMode.NONE
     since: datetime | None = None
 
+    @classmethod
+    def from_pyproject_toml(cls, pyproject_file: Path) -> "PyTraceabilityConfig":
+        """Create a PyTraceabilityConfig from a pyproject.toml file."""
+        if not pyproject_file.exists():
+            raise FileNotFoundError(f"pyproject.toml file not found: {pyproject_file}")
+        contents = tomli.loads(pyproject_file.read_text())
+        return cls(
+            repo_root=get_repo_root(pyproject_file.parent),
+            **contents["tool"][PROJECT_NAME],
+        )
+
 
 def find_pyproject_file(path_in_repo: Path) -> Path:
     "Initially assume it's located in the root of the git repo"
@@ -50,8 +61,4 @@ def get_repo_root(path_in_repo):
 
 def find_and_parse_config(path_in_repo: Path) -> PyTraceabilityConfig:
     pyproject_file = find_pyproject_file(path_in_repo)
-    contents = tomli.loads(pyproject_file.read_text())
-    return PyTraceabilityConfig(
-        repo_root=get_repo_root(path_in_repo),
-        **contents["tool"][PROJECT_NAME],
-    )
+    return PyTraceabilityConfig.from_pyproject_toml(pyproject_file)

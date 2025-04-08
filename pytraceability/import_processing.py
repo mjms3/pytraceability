@@ -1,3 +1,4 @@
+import logging
 from importlib import util
 from pathlib import Path
 from typing import Generator
@@ -11,6 +12,8 @@ from pytraceability.data_definition import ExtractionResult
 from pytraceability.exceptions import (
     InvalidTraceabilityError,
 )
+
+_log = logging.getLogger(__name__)
 
 
 def _get_module_name(
@@ -62,6 +65,7 @@ def extract_traceabilities_using_module_import(
     project_root: Path,
     extraction_results: list[ExtractionResult],
 ) -> Generator[ExtractionResult, None, None]:
+    _log.info("Extracting traceability from %s using module import", file_path)
     module = _load_python_module(file_path, project_root)
     for extraction in extraction_results:
         try:

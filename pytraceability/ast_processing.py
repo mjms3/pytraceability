@@ -1,4 +1,5 @@
 import ast
+import logging
 from pathlib import Path
 
 from typing_extensions import cast
@@ -16,6 +17,8 @@ from pytraceability.data_definition import (
     Traceability,
 )
 from pytraceability.config import PyTraceabilityConfig, PROJECT_NAME
+
+_log = logging.getLogger(__name__)
 
 
 def _extract_traceability_from_decorator(decorator: ast.Call) -> Traceability:
@@ -44,7 +47,11 @@ def _extract_traceability_from_decorator(decorator: ast.Call) -> Traceability:
         else:
             kwargs[keyword.arg] = UNKNOWN
             able_to_extract_statically = False
-
+    _log.info(
+        "Found traceability key: %s. able_to_extract_statically=%s",
+        key,
+        able_to_extract_statically,
+    )
     return Traceability(
         key=key, metadata=kwargs, is_complete=able_to_extract_statically
     )
@@ -92,6 +99,7 @@ class TraceabilityVisitor(ast.NodeVisitor):
         if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
             name = node.name
             self.stack.append(name)
+            _log.debug("Processing %s: %s", node.__class__.__name__, name)
             self.check_callable_node(node)
             super().generic_visit(node)
             self.stack.pop()
@@ -106,6 +114,7 @@ class TraceabilityVisitor(ast.NodeVisitor):
 def extract_traceability_from_file_using_ast(
     file_path: Path, config: PyTraceabilityConfig
 ) -> list[ExtractionResult]:
+    _log.info("Extracting traceability from file: %s", file_path)
     with open(file_path, "r") as f:
         source_code = f.read()
         tree = ast.parse(source_code, filename=file_path)

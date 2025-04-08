@@ -1,4 +1,5 @@
 import fnmatch
+import logging
 from pathlib import Path
 from typing import Generator
 
@@ -21,6 +22,8 @@ from pytraceability.exceptions import (
 from pytraceability.history import get_line_based_history
 from pytraceability.import_processing import extract_traceabilities_using_module_import
 
+_log = logging.getLogger(__name__)
+
 
 def _file_is_excluded(path: Path, exclude_file_patterns: list[str]) -> bool:
     return any(fnmatch.fnmatch(str(path), pat) for pat in exclude_file_patterns)
@@ -41,6 +44,7 @@ def collect_output_data(
     if config.git_history_mode == GitHistoryMode.NONE:
         yield from traceability_reports
     elif config.git_history_mode == GitHistoryMode.FUNCTION_HISTORY:
+        _log.info("Collecting git history for traceability reports")
         traceability_report_list = list(traceability_reports)
         git_history = get_line_based_history(traceability_report_list, config)
         for report in traceability_report_list:
@@ -54,8 +58,10 @@ def collect_traceability_from_directory(
     project_root: Path,
     config: PyTraceabilityConfig,
 ) -> Generator[TraceabilityReport, None, None]:
+    _log.info("Using exclude patterns %s", config.exclude_patterns)
     for file_path in dir_path.rglob("*.py"):
         if _file_is_excluded(file_path, config.exclude_patterns):
+            _log.debug("Skipping %s", file_path)
             continue
         yield from extract_traceability_from_file(file_path, project_root, config)
 
@@ -78,6 +84,10 @@ def extract_traceability_from_file(
         else:
             incomplete_extractions.append(extraction)
     if len(incomplete_extractions) > 0:
+        _log.info(
+            "%s traceability decorators could not be extracted statically.",
+            len(incomplete_extractions),
+        )
         if config.mode == PyTraceabilityMode.static_only:
             raise InvalidTraceabilityError.from_allowed_message_types(
                 TraceabilityErrorMessages.STATIC_MODE,

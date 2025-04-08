@@ -15,6 +15,7 @@ from pytraceability.config import (
     GitHistoryMode,
 )
 from pytraceability.discovery import collect_output_data
+from pytraceability.logging import setup_logging  # Import logging setup
 
 
 class OutputFormats(str, Enum):
@@ -44,6 +45,12 @@ class OutputFormats(str, Enum):
     "--since",
     type=datetime.fromisoformat,
 )
+@click.option(
+    "-v",
+    "--verbose",
+    count=True,
+    help="Set verbosity level. Use -v for INFO, -vv for DEBUG",
+)
 def main(
     base_directory: Path,
     decorator_name: str,
@@ -51,7 +58,10 @@ def main(
     mode: PyTraceabilityMode,
     git_history_mode: GitHistoryMode,
     since: datetime,
+    verbose: int,
 ):
+    setup_logging(verbose)
+
     if click.get_text_stream("stdout").isatty():
         click.echo(f"Extracting traceability from {base_directory}")
         click.echo(f"Using project root: {base_directory}")

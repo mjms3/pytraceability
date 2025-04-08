@@ -1,3 +1,5 @@
+import logging
+
 from pydantic import BaseModel, Field
 from datetime import datetime
 from enum import Enum
@@ -8,6 +10,8 @@ import tomli
 from pytraceability.common import STANDARD_DECORATOR_NAME
 
 PROJECT_NAME = "pytraceability"
+
+_log = logging.getLogger(__name__)
 
 
 class PyTraceabilityMode(str, Enum):
@@ -32,10 +36,13 @@ class PyTraceabilityConfig(BaseModel):
 def find_pyproject_file(path_in_repo: Path) -> Path:
     "Initially assume it's located in the root of the git repo"
     git_root = get_repo_root(path_in_repo)
-    return git_root / "pyproject.toml"
+    pyproject_toml_file = git_root / "pyproject.toml"
+    _log.info("Using pyproject.toml file: %s", pyproject_toml_file)
+    return pyproject_toml_file
 
 
 def get_repo_root(path_in_repo):
+    _log.debug("Finding git root for %s", path_in_repo)
     git_repo = git.Repo(path_in_repo, search_parent_directories=True)
     git_root = Path(git_repo.git.rev_parse("--show-toplevel"))
     return git_root

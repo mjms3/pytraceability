@@ -1,4 +1,5 @@
 import ast
+import logging
 from pathlib import Path
 from typing import Dict
 
@@ -13,6 +14,8 @@ from pytraceability.data_definition import (
     TraceabilityReport,
     ExtractionResultsList,
 )
+
+_log = logging.getLogger(__name__)
 
 
 class CurrentFileForKey(Dict[str, str | None]):
@@ -58,6 +61,11 @@ def get_line_based_history(
             config.since is not None
             and commit.committer_date.timestamp() < config.since.timestamp()
         ):
+            _log.info(
+                "Ending processing as committer date %s is older than %s",
+                commit.committer_date,
+                config.since,
+            )
             break
         current_file_set = set(current_file_for_key.values())
         relevant_files_first = sorted(
@@ -73,6 +81,7 @@ def get_line_based_history(
                 or not modified_file.new_path.endswith("py")
             ):
                 continue
+            _log.debug("Processing file %s", modified_file.new_path)
             tree = ast.parse(modified_file.source_code, filename=modified_file.new_path)
             extraction_results = TraceabilityVisitor(
                 config,
@@ -96,5 +105,6 @@ def get_line_based_history(
                 current_file_for_key[traceability_report.key] = modified_file.new_path
 
             if all(current_file_for_key.values()):
+                _log.info("All traceability decorators located for commit")
                 break
     return history

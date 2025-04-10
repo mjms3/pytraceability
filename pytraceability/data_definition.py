@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from pydantic import BaseModel, Field
 from datetime import datetime
 from pathlib import Path
-from typing import Mapping, Any, Generator
+from typing import Mapping, Any, Generator, List
 
 MetaDataType = Mapping[str, Any]
 
@@ -39,7 +41,7 @@ class ExtractionResult(CurrentLocationRecord):
         return all(t.is_complete for t in self.traceability_data)
 
 
-class ExtractionResultsList(list[ExtractionResult]):
+class ExtractionResultsList(List[ExtractionResult]):
     def _flat(self) -> Generator[TraceabilityReport, None, None]:
         for extraction_result in self:
             extraction_result_as_dict = extraction_result.dict()

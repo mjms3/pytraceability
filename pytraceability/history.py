@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import ast
 import logging
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 from pydriller import Repository, ModifiedFile
 from typing_extensions import Self
@@ -18,7 +20,7 @@ from pytraceability.data_definition import (
 _log = logging.getLogger(__name__)
 
 
-class CurrentFileForKey(Dict[str, str | None]):
+class CurrentFileForKey(Dict[str, Optional[str]]):
     @classmethod
     def from_traceability_reports(
         cls,

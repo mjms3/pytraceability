@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from enum import Enum
 from textwrap import dedent
 from typing_extensions import Self

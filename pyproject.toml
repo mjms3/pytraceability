@@ -9,7 +9,7 @@ readme = "README.md"
 license = "MIT"
 
 [tool.poetry.scripts]
-pytraceability = 'pytraceability.cli'
+pytraceability = 'pytraceability.cli:main'
 
 [tool.poetry.dependencies]
 python = ">=3.8,<4.0"

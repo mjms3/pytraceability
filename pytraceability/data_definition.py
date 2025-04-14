@@ -44,10 +44,10 @@ class ExtractionResult(CurrentLocationRecord):
 class ExtractionResultsList(List[ExtractionResult]):
     def _flat(self) -> Generator[TraceabilityReport, None, None]:
         for extraction_result in self:
-            extraction_result_as_dict = extraction_result.dict()
+            extraction_result_as_dict = extraction_result.model_dump()
             extraction_result_as_dict.pop("traceability_data")
             for traceability_data in extraction_result.traceability_data:
-                kwargs = traceability_data.dict()
+                kwargs = traceability_data.model_dump()
                 kwargs.update(extraction_result_as_dict)
                 yield TraceabilityReport(**kwargs)
 

@@ -28,15 +28,18 @@ pyright = "^1.1.397"
 pytest-raises = "^0.11"
 pytest-cov = "^5.0.0"
 
-
 [tool.pyright]
 venvPath = "."
 venv = ".venv"
 reportUnnecessaryTypeIgnoreComment = true
 
+[tool.pytest.ini_options]
+filterwarnings = [
+    "error"
+]
+
 [tool.pytraceability]
 decorator_name = "pytraceability"
-
 
 [build-system]
 requires = ["poetry-core>=1.7.1,<2.0.0"]

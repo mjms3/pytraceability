@@ -46,14 +46,16 @@ def _load_python_module(
     return module
 
 
-def _extract_traceability(module, node_name) -> list[Traceability]:
+def _extract_traceability(module, node_name) -> list[Traceability] | None:
     current_top_level_object = module
     attribute_path_to_node = node_name.split(".")
     for attribute in attribute_path_to_node[:-1]:
         current_top_level_object = getattr(current_top_level_object, attribute)
-    return getattr(
-        current_top_level_object, attribute_path_to_node[-1]
-    ).__traceability__
+    if imported_callable := getattr(
+        current_top_level_object, attribute_path_to_node[-1], None
+    ):
+        return imported_callable.__traceability__
+    return None
 
 
 @pytraceability(
@@ -70,8 +72,6 @@ def extract_traceabilities_using_module_import(
     _log.info("Extracting traceability from %s using module import", file_path)
     module = _load_python_module(file_path, project_root)
     for extraction in extraction_results:
-        try:
-            traceability_data = _extract_traceability(module, extraction.function_name)
-            yield extraction.model_copy(update={"traceability_data": traceability_data})
-        except AttributeError:
-            yield extraction
+        if traceability_data := _extract_traceability(module, extraction.function_name):
+            extraction.traceability_data = traceability_data
+        yield extraction

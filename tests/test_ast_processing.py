@@ -45,7 +45,7 @@ def foo():
             {"info": [RawCode("f'{var} something'")]},
             False,
         ),
-        ("info={'item1', 'item2'}", {"info": {"item1", "item2"}}, True),  # Test for set
+        ("info={'item1', 'item2'}", {"info": {"item1", "item2"}}, True),
         (
             "info=('item1', 'item2')",
             {"info": ("item1", "item2")},

@@ -50,7 +50,8 @@ def collect_output_data(
         traceability_report_list = list(traceability_reports)
         git_history = get_line_based_history(traceability_report_list, config)
         for report in traceability_report_list:
-            yield report.model_copy(update={"history": git_history.get(report.key)})
+            report.history = git_history.get(report.key)
+            yield report
     else:  # pragma: no cover
         raise ValueError(f"Unsupported git history mode: {config.git_history_mode}")
 

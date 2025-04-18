@@ -1,17 +1,18 @@
 from __future__ import annotations
 
 import ast
+from datetime import date
+from decimal import Decimal
 from pathlib import Path
 from textwrap import dedent
 
 import pytest
 
-from pytraceability.ast_processing import TraceabilityVisitor
+from pytraceability.ast_processing import TraceabilityVisitor, RawCode
 from pytraceability.exceptions import InvalidTraceabilityError
 from pytraceability.data_definition import (
     ExtractionResult,
     Traceability,
-    RawSourceCode,
 )
 from tests.factories import TEST_CONFIG
 
@@ -36,12 +37,12 @@ def foo():
         ("info={'key': 'value'}", {"info": {"key": "value"}}, True),
         (
             "info=f'{var} something'",
-            {"info": RawSourceCode("f'{var} something'")},
+            {"info": RawCode("f'{var} something'")},
             False,
         ),
         (
             "info=[f'{var} something']",
-            {"info": [RawSourceCode("f'{var} something'")]},
+            {"info": [RawCode("f'{var} something'")]},
             False,
         ),
         ("info={'item1', 'item2'}", {"info": {"item1", "item2"}}, True),  # Test for set
@@ -49,17 +50,27 @@ def foo():
             "info=('item1', 'item2')",
             {"info": ("item1", "item2")},
             True,
-        ),  # Test for tuple
+        ),
         (
-            "info={f'{var} something'}",
-            {"info": {RawSourceCode("f'{var} something'")}},
-            False,
-        ),  # Set with RawSourceCode
+            "info=[x**2 for x in range(2)]",
+            {"info": [0, 1]},
+            True,
+        ),
         (
-            "info=(f'{var} something',)",
-            {"info": (RawSourceCode("f'{var} something'"),)},
+            "info=[x+y for x in range(2)]",
+            {"info": RawCode("[x+y for x in range(2)]")},
             False,
-        ),  # Tuple with RawSourceCode
+        ),
+        (
+            "info=datetime.date(2020,1,1)",
+            {"info": date(2020, 1, 1)},
+            True,
+        ),
+        (
+            "info=Decimal('1.0')",
+            {"info": Decimal("1.0")},
+            True,
+        ),
     ],
 )
 def test_statically_extract_traceability_decorators(

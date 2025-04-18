@@ -9,6 +9,7 @@ from pytraceability.config import (
 )
 from pytraceability.data_definition import (
     TraceabilityReport,
+    RawCode,
 )
 from pytraceability.discovery import (
     collect_output_data,
@@ -81,7 +82,7 @@ def test_closure_with_dynamic_metadata():
     _test_from_module(
         closure_with_metadata_in_a_variable,
         function_name="foo.bar",
-        metadata={"a": "METADATA"},
+        metadata={"a": RawCode("METADATA")},
         line_num_offset=6,
         is_complete=False,
     )

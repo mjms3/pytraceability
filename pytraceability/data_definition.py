@@ -6,7 +6,22 @@ from typing import Mapping, Any, Generator, List
 
 from pydantic import BaseModel, Field, computed_field
 
+
 MetaDataType = Mapping[str, Any]
+
+
+class RawCode:
+    def __init__(self, code: str | None):
+        self.code = code
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.code!r})"
+
+    def __eq__(self, other):
+        return self.code == other.code
+
+    def __hash__(self):
+        return hash(self.code)
 
 
 class Traceability(BaseModel):
@@ -15,9 +30,9 @@ class Traceability(BaseModel):
 
     @staticmethod
     def _contains_raw_source_code(value: Any) -> bool:
-        if isinstance(value, RawSourceCode):
+        if isinstance(value, RawCode):
             return True
-        elif isinstance(value, (list, set, tuple)):  # Added set and tuple
+        elif isinstance(value, (list, set, tuple)):
             return any(Traceability._contains_raw_source_code(item) for item in value)
         elif isinstance(value, dict):
             return any(
@@ -45,10 +60,6 @@ class CurrentLocationRecord(BaseModel):
     line_number: int
     end_line_number: int | None
     source_code: str | None
-
-
-class RawSourceCode(str):
-    pass
 
 
 class TraceabilityReport(Traceability, CurrentLocationRecord):

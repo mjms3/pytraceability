@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import ast
+import datetime
 import logging
+from decimal import Decimal
 from pathlib import Path
 
 from typing_extensions import cast
-
 
 from pytraceability.exceptions import (
     TraceabilityErrorMessages,
@@ -15,11 +16,17 @@ from pytraceability.custom import pytraceability
 from pytraceability.data_definition import (
     ExtractionResult,
     Traceability,
-    RawSourceCode,  # Import RawSourceCode
+    RawCode,
 )
 from pytraceability.config import PyTraceabilityConfig, PROJECT_NAME
 
 _log = logging.getLogger(__name__)
+
+
+globals_ = {
+    "datetime": datetime,
+    "Decimal": Decimal,
+}
 
 
 class TraceabilityVisitor(ast.NodeVisitor):
@@ -37,21 +44,35 @@ class TraceabilityVisitor(ast.NodeVisitor):
         super().visit(node)
         return self.traceability_data
 
-    def _parse_value(self, value):
-        node_parsers = {
-            ast.Constant: lambda v: v.value,
-            ast.List: lambda v: [self._parse_value(elt) for elt in v.elts],
-            ast.Tuple: lambda v: tuple(self._parse_value(elt) for elt in v.elts),
-            ast.Set: lambda v: {self._parse_value(elt) for elt in v.elts},
-            ast.Dict: lambda v: {
-                self._parse_value(k): self._parse_value(v)
-                for k, v in zip(v.keys, v.values)
-            },
-        }
-        parser = node_parsers.get(type(value))
-        if parser:
-            return parser(value)
-        return RawSourceCode(ast.get_source_segment(self.source_code, value))
+    def safe_eval(self, node, globals_=None):
+        try:
+            return ast.literal_eval(node)
+        except Exception as e:
+            _log.debug(f"literal_eval failed for node: {ast.dump(node)} — {e}")
+            try:
+                code = compile(ast.Expression(body=node), "<ast>", "eval")
+                return eval(code, globals_ or {}, {})
+            except Exception as e2:
+                source = ast.get_source_segment(self.source_code, node)
+                _log.debug(f"eval failed for node: {source} — {e2}")
+                return RawCode(source)
+
+    def walk_arg_definition(self, node, globals_=None):
+        if isinstance(node, ast.Dict):
+            return {
+                self.walk_arg_definition(k, globals_): self.walk_arg_definition(
+                    v, globals_
+                )
+                for k, v in zip(node.keys, node.values)
+            }
+        elif isinstance(node, ast.List):
+            return [self.walk_arg_definition(e, globals_) for e in node.elts]
+        elif isinstance(node, ast.Tuple):
+            return tuple(self.walk_arg_definition(e, globals_) for e in node.elts)
+        elif isinstance(node, ast.Set):
+            return set(self.walk_arg_definition(e, globals_) for e in node.elts)
+        else:
+            return self.safe_eval(node, globals_)
 
     def _extract_traceability_from_decorator(self, decorator: ast.Call) -> Traceability:
         kwargs = {}
@@ -73,7 +94,9 @@ class TraceabilityVisitor(ast.NodeVisitor):
             )
 
         for keyword in decorator.keywords:
-            kwargs[keyword.arg] = self._parse_value(keyword.value)
+            kwargs[keyword.arg] = self.walk_arg_definition(
+                keyword.value, globals_=globals_
+            )
 
         _log.info(
             "Found traceability key: %s. metadata=%s",

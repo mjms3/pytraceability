@@ -2,7 +2,7 @@ from pytraceability.common import traceability
 
 
 def foo():
-    METADATA = "METADATA"
+    METADATA = "METADATA-STRING"
 
     @traceability(
         "A key",

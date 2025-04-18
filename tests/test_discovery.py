@@ -1,3 +1,4 @@
+import logging
 from operator import attrgetter
 from pathlib import Path
 from types import ModuleType
@@ -122,5 +123,15 @@ def test_collect_from_directory():
 def test_filename_exclusion():
     file_path = Path(function_with_traceability.__file__).parent
     config = TEST_CONFIG.model_copy(update={"exclude_patterns": ["*test*"]})
-    actual = list(collect_output_data(file_path, TEST_ROOT, config))
-    assert actual == []
+    assert list(collect_output_data(file_path, TEST_ROOT, config)) == []
+
+
+def test_invalid_python_file(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+    caplog.set_level(logging.WARNING)
+    invalid_file = tmp_path / "invalid_file.py"
+    invalid_file.write_text("def foo():\n    print('Hello World'")
+
+    config = TEST_CONFIG.model_copy(update={"repo_root": tmp_path})
+
+    assert list(collect_output_data(tmp_path, tmp_path, config)) == []
+    assert "Ignoring file due to syntax error" in caplog.text

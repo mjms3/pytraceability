@@ -152,7 +152,11 @@ def extract_traceability_from_file_using_ast(
     _log.info("Extracting traceability from file: %s", file_path)
     with open(file_path, "r") as f:
         source_code = f.read()
-        tree = ast.parse(source_code, filename=file_path)
+        try:
+            tree = ast.parse(source_code, filename=file_path)
+        except SyntaxError:
+            _log.warning(f"Ignoring file due to syntax error: {file_path}")
+            return []
         return TraceabilityVisitor(
             config, file_path=file_path, source_code=source_code
         ).visit(tree)

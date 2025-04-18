@@ -4,8 +4,6 @@ from pytraceability.data_definition import Traceability
 
 MetaDataType = Mapping[str, Any]
 
-UNKNOWN = "UNKNOWN"
-
 
 class traceability:
     def __init__(self, key: str, /, **kwargs) -> None:

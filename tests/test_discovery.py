@@ -4,9 +4,6 @@ from types import ModuleType
 
 import pytest
 
-from pytraceability.common import (
-    UNKNOWN,
-)
 from pytraceability.config import (
     PyTraceabilityMode,
 )
@@ -84,7 +81,7 @@ def test_closure_with_dynamic_metadata():
     _test_from_module(
         closure_with_metadata_in_a_variable,
         function_name="foo.bar",
-        metadata={"a": UNKNOWN},
+        metadata={"a": "METADATA"},
         line_num_offset=6,
         is_complete=False,
     )

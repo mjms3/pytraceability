@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 from pydantic import BaseModel
 
 
@@ -15,8 +16,10 @@ class PydanticModelMatcher:
             )
 
         mismatches = {}
+        all_fields = list(other.model_fields) + list(other.model_computed_fields)
+
         for field, expected_value in self.expected_fields.items():
-            if field not in other.model_fields:
+            if field not in all_fields:
                 raise ValueError(
                     f"Field '{field}' is not part of the model {self.expected_type.__name__}"
                 )

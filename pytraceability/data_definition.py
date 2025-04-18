@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
 from datetime import datetime
 from pathlib import Path
 from typing import Mapping, Any, Generator, List
+
+from pydantic import BaseModel, Field, computed_field
 
 MetaDataType = Mapping[str, Any]
 
@@ -11,7 +12,23 @@ MetaDataType = Mapping[str, Any]
 class Traceability(BaseModel):
     key: str
     metadata: MetaDataType = Field(default_factory=dict)
-    is_complete: bool = True
+
+    @staticmethod
+    def _contains_raw_source_code(value: Any) -> bool:
+        if isinstance(value, RawSourceCode):
+            return True
+        elif isinstance(value, (list, set, tuple)):  # Added set and tuple
+            return any(Traceability._contains_raw_source_code(item) for item in value)
+        elif isinstance(value, dict):
+            return any(
+                Traceability._contains_raw_source_code(v) for v in value.values()
+            )
+        return False
+
+    @computed_field
+    @property
+    def is_complete(self) -> bool:
+        return not self._contains_raw_source_code(self.metadata)
 
 
 class TraceabilityGitHistory(BaseModel):
@@ -30,15 +47,16 @@ class CurrentLocationRecord(BaseModel):
     source_code: str | None
 
 
+class RawSourceCode(str):
+    pass
+
+
 class TraceabilityReport(Traceability, CurrentLocationRecord):
     history: list[TraceabilityGitHistory] | None = None
 
 
 class ExtractionResult(CurrentLocationRecord):
     traceability_data: list[Traceability]
-
-    def is_complete(self) -> bool:
-        return all(t.is_complete for t in self.traceability_data)
 
 
 class ExtractionResultsList(List[ExtractionResult]):

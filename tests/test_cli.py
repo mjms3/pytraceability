@@ -14,8 +14,8 @@ common_output = [
 ]
 
 json_output = [
-    '{{"file_path":"{base_dir}/file1.py","function_name":"foo","line_number":5,"end_line_number":6,"source_code":"def foo():\\n    pass","key":"KEY-1","metadata":{{}},"is_complete":true,"history":null}}',
-    '{{"file_path":"{base_dir}/file2.py","function_name":"foo","line_number":5,"end_line_number":6,"source_code":"def foo():\\n    pass","key":"KEY-2","metadata":{{}},"is_complete":true,"history":null}}',
+    '{{"file_path":"{base_dir}/file1.py","function_name":"foo","line_number":5,"end_line_number":6,"source_code":"def foo():\\n    pass","key":"KEY-1","metadata":{{}},"history":null,"is_complete":true}}',
+    '{{"file_path":"{base_dir}/file2.py","function_name":"foo","line_number":5,"end_line_number":6,"source_code":"def foo():\\n    pass","key":"KEY-2","metadata":{{}},"history":null,"is_complete":true}}',
 ]
 
 

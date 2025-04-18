@@ -6,9 +6,7 @@ from pathlib import Path
 
 from typing_extensions import cast
 
-from pytraceability.common import (
-    UNKNOWN,
-)
+
 from pytraceability.exceptions import (
     TraceabilityErrorMessages,
     InvalidTraceabilityError,
@@ -17,46 +15,11 @@ from pytraceability.custom import pytraceability
 from pytraceability.data_definition import (
     ExtractionResult,
     Traceability,
+    RawSourceCode,  # Import RawSourceCode
 )
 from pytraceability.config import PyTraceabilityConfig, PROJECT_NAME
 
 _log = logging.getLogger(__name__)
-
-
-def _extract_traceability_from_decorator(decorator: ast.Call) -> Traceability:
-    kwargs = {}
-    able_to_extract_statically = True
-
-    if not decorator.args:
-        raise InvalidTraceabilityError.from_allowed_message_types(
-            TraceabilityErrorMessages.KEY_MUST_BE_ARG
-        )
-    if len(decorator.args) != 1:
-        raise InvalidTraceabilityError.from_allowed_message_types(
-            TraceabilityErrorMessages.ONLY_ONE_ARG,
-            f"Decorator has args: {[getattr(a, 's') or a for a in decorator.args]}",
-        )
-    if isinstance(decorator.args[0], ast.Constant):
-        key = decorator.args[0].s
-    else:
-        raise InvalidTraceabilityError.from_allowed_message_types(
-            TraceabilityErrorMessages.KEY_CAN_NOT_BE_DYNAMIC
-        )
-
-    for keyword in decorator.keywords:
-        if isinstance(keyword.value, ast.Constant):
-            kwargs[keyword.arg] = keyword.value.s
-        else:
-            kwargs[keyword.arg] = UNKNOWN
-            able_to_extract_statically = False
-    _log.info(
-        "Found traceability key: %s. able_to_extract_statically=%s",
-        key,
-        able_to_extract_statically,
-    )
-    return Traceability(
-        key=key, metadata=kwargs, is_complete=able_to_extract_statically
-    )
 
 
 class TraceabilityVisitor(ast.NodeVisitor):
@@ -74,6 +37,51 @@ class TraceabilityVisitor(ast.NodeVisitor):
         super().visit(node)
         return self.traceability_data
 
+    def _parse_value(self, value):
+        node_parsers = {
+            ast.Constant: lambda v: v.value,
+            ast.List: lambda v: [self._parse_value(elt) for elt in v.elts],
+            ast.Tuple: lambda v: tuple(self._parse_value(elt) for elt in v.elts),
+            ast.Set: lambda v: {self._parse_value(elt) for elt in v.elts},
+            ast.Dict: lambda v: {
+                self._parse_value(k): self._parse_value(v)
+                for k, v in zip(v.keys, v.values)
+            },
+        }
+        parser = node_parsers.get(type(value))
+        if parser:
+            return parser(value)
+        return RawSourceCode(ast.get_source_segment(self.source_code, value))
+
+    def _extract_traceability_from_decorator(self, decorator: ast.Call) -> Traceability:
+        kwargs = {}
+
+        if not decorator.args:
+            raise InvalidTraceabilityError.from_allowed_message_types(
+                TraceabilityErrorMessages.KEY_MUST_BE_ARG
+            )
+        if len(decorator.args) != 1:
+            raise InvalidTraceabilityError.from_allowed_message_types(
+                TraceabilityErrorMessages.ONLY_ONE_ARG,
+                f"Decorator has args: {[getattr(a, 's') or a for a in decorator.args]}",
+            )
+        if isinstance(decorator.args[0], ast.Constant):
+            key = decorator.args[0].value
+        else:
+            raise InvalidTraceabilityError.from_allowed_message_types(
+                TraceabilityErrorMessages.KEY_CAN_NOT_BE_DYNAMIC
+            )
+
+        for keyword in decorator.keywords:
+            kwargs[keyword.arg] = self._parse_value(keyword.value)
+
+        _log.info(
+            "Found traceability key: %s. metadata=%s",
+            key,
+            kwargs,
+        )
+        return Traceability(key=key, metadata=kwargs)
+
     def check_callable_node(self, node):
         traceability = []
         for decorator in node.decorator_list:
@@ -83,7 +91,9 @@ class TraceabilityVisitor(ast.NodeVisitor):
             ):
                 continue
             if decorator.func.id == self.config.decorator_name:
-                traceability.append(_extract_traceability_from_decorator(decorator))
+                traceability.append(
+                    self._extract_traceability_from_decorator(decorator)
+                )
 
         if len(traceability) > 0:
             self.traceability_data.append(

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import functools
 import os
 import sys
 from datetime import datetime
 from enum import Enum
 from operator import attrgetter
 from pathlib import Path
+from types import SimpleNamespace
 
 import click
 
@@ -26,8 +28,19 @@ class OutputFormats(str, Enum):
     JSON = "json"
 
 
+def strip_kwargs(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        # Strip everything except the context object
+        ctx = args[0] if args else kwargs.get("ctx")
+        return f(ctx)
+
+    return wrapper
+
+
 @click.command()
 @click.option("--base-directory", type=Path, default=Path(os.getcwd()))
+@click.option("--repo-root", type=Path, default=Path(os.getcwd()))
 @click.option("--decorator-name", type=str, default=STANDARD_DECORATOR_NAME)
 @click.option(
     "--output-format",
@@ -54,52 +67,58 @@ class OutputFormats(str, Enum):
     help="Path to a pyproject.toml file to load configuration from.",
 )
 @click.option(
+    "--exclude-pattern",
+    "exclude_patterns",
+    type=str,
+    multiple=True,
+)
+@click.option(
     "-v",
     "--verbose",
+    "verbosity",
     count=True,
     help="Set verbosity level. Use -v for INFO, -vv for DEBUG",
 )
-def main(
-    base_directory: Path,
-    decorator_name: str,
-    output_format: OutputFormats,
-    mode: PyTraceabilityMode,
-    git_history_mode: GitHistoryMode,
-    since: datetime,
-    pyproject_file: Path,
-    verbose: int,
-):
-    setup_logging(verbose)
+@click.version_option()
+@click.pass_context
+@strip_kwargs
+def main(ctx):
+    params = SimpleNamespace(**ctx.params)
+    setup_logging(params.verbosity)
 
     if click.get_text_stream("stdout").isatty():
-        click.echo(f"Extracting traceability from {base_directory}")
-        click.echo(f"Using project root: {base_directory}")
+        click.echo(f"Extracting traceability from {params.base_directory}")
+        click.echo(f"Using project root: {params.base_directory}")
 
-    pyproject_file_to_use = pyproject_file or find_pyproject_file(base_directory)
+    pyproject_file_to_use = params.pyproject_file or find_pyproject_file(
+        params.base_directory
+    )
 
     if pyproject_file_to_use:
         config = PyTraceabilityConfig.from_pyproject_toml(pyproject_file_to_use)
     else:
-        config = PyTraceabilityConfig(repo_root=get_repo_root(base_directory))
-    config.decorator_name = decorator_name
-    config.mode = mode
-    config.git_history_mode = git_history_mode
-    config.since = since
+        config = PyTraceabilityConfig(repo_root=get_repo_root(params.base_directory))
+    config.decorator_name = params.decorator_name
+    config.mode = params.mode
+    config.git_history_mode = params.git_history_mode
+    config.since = params.since
+    config.repo_root = params.repo_root
+    config.exclude_patterns = params.exclude_patterns
 
     for result in sorted(
         collect_output_data(
-            base_directory,
-            base_directory,
+            params.base_directory,
+            params.base_directory,
             config,
         ),
         key=attrgetter("key"),
     ):
-        if output_format == OutputFormats.KEY_ONLY:
+        if params.output_format == OutputFormats.KEY_ONLY:
             click.echo(result.key)
-        elif output_format == OutputFormats.JSON:
+        elif params.output_format == OutputFormats.JSON:
             click.echo(result.model_dump_json())
         else:  # pragma: no cover
-            raise ValueError(f"Unknown output format: {output_format}")
+            raise ValueError(f"Unknown output format: {params.output_format}")
 
 
 if __name__ == "__main__":  # pragma: no cover

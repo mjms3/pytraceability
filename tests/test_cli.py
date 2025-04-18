@@ -6,6 +6,7 @@ import pytest
 from click.testing import CliRunner
 
 from pytraceability.cli import main, OutputFormats
+from pytraceability.config import PyTraceabilityConfig
 
 common_output = [
     "KEY-1",
@@ -50,3 +51,9 @@ def test_cli(isatty, output_format, expected_output):
     assert result.output.strip().split(os.linesep) == [
         line.format(base_dir=base_dir) for line in expected_output
     ]
+
+
+def test_all_config_options_can_be_set_with_cli():
+    cli_args = {p.name for p in main.params}
+    config_fields = set(PyTraceabilityConfig.model_fields)
+    assert config_fields <= cli_args

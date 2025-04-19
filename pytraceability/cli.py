@@ -4,10 +4,8 @@ import functools
 import os
 import sys
 from datetime import datetime
-from enum import Enum
 from operator import attrgetter
 from pathlib import Path
-from types import SimpleNamespace
 
 import click
 
@@ -15,17 +13,11 @@ from pytraceability.common import STANDARD_DECORATOR_NAME
 from pytraceability.config import (
     PyTraceabilityConfig,
     PyTraceabilityMode,
-    get_repo_root,
     GitHistoryMode,
-    find_pyproject_file,
+    OutputFormats,
 )
 from pytraceability.discovery import collect_output_data
 from pytraceability.logging import setup_logging  # Import logging setup
-
-
-class OutputFormats(str, Enum):
-    KEY_ONLY = "key-only"
-    JSON = "json"
 
 
 def strip_kwargs(f):
@@ -40,7 +32,6 @@ def strip_kwargs(f):
 
 @click.command()
 @click.option("--base-directory", type=Path, default=Path(os.getcwd()))
-@click.option("--repo-root", type=Path, default=Path(os.getcwd()))
 @click.option("--decorator-name", type=str, default=STANDARD_DECORATOR_NAME)
 @click.option(
     "--output-format",
@@ -52,6 +43,7 @@ def strip_kwargs(f):
     type=click.Choice([o.value for o in PyTraceabilityMode]),
     default=PyTraceabilityMode.static_only,
 )
+@click.option("--python-root", type=Path, default=None)
 @click.option(
     "--git-history-mode",
     type=click.Choice([o.value for o in GitHistoryMode]),
@@ -83,42 +75,23 @@ def strip_kwargs(f):
 @click.pass_context
 @strip_kwargs
 def main(ctx):
-    params = SimpleNamespace(**ctx.params)
-    setup_logging(params.verbosity)
+    setup_logging(ctx.params["verbosity"])
+    config = PyTraceabilityConfig.from_command_line_arguments(ctx.params)
 
     if click.get_text_stream("stdout").isatty():
-        click.echo(f"Extracting traceability from {params.base_directory}")
-        click.echo(f"Using project root: {params.base_directory}")
-
-    pyproject_file_to_use = params.pyproject_file or find_pyproject_file(
-        params.base_directory
-    )
-
-    if pyproject_file_to_use:
-        config = PyTraceabilityConfig.from_pyproject_toml(pyproject_file_to_use)
-    else:
-        config = PyTraceabilityConfig(repo_root=get_repo_root(params.base_directory))
-    config.decorator_name = params.decorator_name
-    config.mode = params.mode
-    config.git_history_mode = params.git_history_mode
-    config.since = params.since
-    config.repo_root = params.repo_root
-    config.exclude_patterns = params.exclude_patterns
+        click.echo(f"Extracting traceability from {config.base_directory}")
+        click.echo(f"Using python root: {config.python_root}")
 
     for result in sorted(
-        collect_output_data(
-            params.base_directory,
-            params.base_directory,
-            config,
-        ),
+        collect_output_data(config),
         key=attrgetter("key"),
     ):
-        if params.output_format == OutputFormats.KEY_ONLY:
+        if config.output_format == OutputFormats.KEY_ONLY:
             click.echo(result.key)
-        elif params.output_format == OutputFormats.JSON:
+        elif config.output_format == OutputFormats.JSON:
             click.echo(result.model_dump_json())
         else:  # pragma: no cover
-            raise ValueError(f"Unknown output format: {params.output_format}")
+            raise ValueError(f"Unknown output format: {config.output_format}")
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -19,7 +19,7 @@ from tests.utils import M
 TEST_ROOT = Path(__file__).parent
 THIS_REPO_ROOT = get_repo_root(TEST_ROOT)
 TEST_CONFIG = PyTraceabilityConfig(
-    repo_root=THIS_REPO_ROOT,
+    base_directory=TEST_ROOT,
     mode=PyTraceabilityMode.static_plus_dynamic,
 )
 
@@ -36,7 +36,7 @@ def _test_from_module(
     if module.__file__ is None:
         raise ValueError(f"module.__file__ is None. Module: {module}")
     file_path = Path(module.__file__)
-    actual = list(extract_traceability_from_file(file_path, TEST_ROOT, config))
+    actual = list(extract_traceability_from_file(file_path, config))
     expected = [
         M(
             TraceabilityReport,

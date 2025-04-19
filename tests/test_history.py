@@ -28,7 +28,7 @@ def git_repo(tmp_path: Path) -> Repo:
 @pytest.fixture()
 def config(tmp_path: Path) -> PyTraceabilityConfig:
     return PyTraceabilityConfig(
-        repo_root=tmp_path,
+        base_directory=tmp_path,
         git_history_mode=GitHistoryMode.FUNCTION_HISTORY,
     )
 
@@ -200,7 +200,7 @@ def run_history_test(
                 git_repo.index.add(source_file)
             git_repo.index.commit(commit_state.msg)
 
-    reports = list(collect_output_data(tmp_path, tmp_path, config))
+    reports = list(collect_output_data(config))
     assert len(reports) == len(history_test_info)
 
     expected_history = {

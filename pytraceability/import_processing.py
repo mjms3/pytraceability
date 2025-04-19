@@ -20,20 +20,20 @@ _log = logging.getLogger(__name__)
 
 def _get_module_name(
     file_path: Path,
-    project_root: Path,
+    python_root: Path,
 ) -> str:
     file_path = file_path.resolve()
-    project_root = project_root.resolve()
+    python_root = python_root.resolve()
 
-    relative_path = file_path.relative_to(project_root)
+    relative_path = file_path.relative_to(python_root)
     return relative_path.with_suffix("").as_posix().replace("/", ".")
 
 
 def _load_python_module(
     file_path: Path,
-    project_root: Path,
+    python_root: Path,
 ):
-    module_name = _get_module_name(file_path, project_root)
+    module_name = _get_module_name(file_path, python_root)
     spec = util.spec_from_file_location(module_name, file_path)
     if spec is None or spec.loader is None:  # pragma: no cover
         raise RuntimeError(
@@ -66,11 +66,11 @@ def _extract_traceability(module, node_name) -> list[Traceability] | None:
 )
 def extract_traceabilities_using_module_import(
     file_path: Path,
-    project_root: Path,
+    python_root: Path,
     extraction_results: list[ExtractionResult],
 ) -> Generator[ExtractionResult, None, None]:
     _log.info("Extracting traceability from %s using module import", file_path)
-    module = _load_python_module(file_path, project_root)
+    module = _load_python_module(file_path, python_root)
     for extraction in extraction_results:
         if traceability_data := _extract_traceability(module, extraction.function_name):
             extraction.traceability_data = traceability_data

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import logging
+from collections import ChainMap
+from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -26,24 +28,52 @@ class GitHistoryMode(str, Enum):
     FUNCTION_HISTORY = "function-history"
 
 
+class OutputFormats(str, Enum):
+    KEY_ONLY = "key-only"
+    JSON = "json"
+
+
 class PyTraceabilityConfig(BaseModel):
-    repo_root: Path
+    base_directory: Path
+    python_root: Path | None = (
+        None  # Optional, will be set to base_directory if not provided
+    )
     decorator_name: str = STANDARD_DECORATOR_NAME
     exclude_patterns: list[str] = Field(default_factory=list)
     mode: PyTraceabilityMode = PyTraceabilityMode.static_only
     git_history_mode: GitHistoryMode = GitHistoryMode.NONE
+    output_format: OutputFormats = OutputFormats.KEY_ONLY
     since: datetime | None = None
 
+    @model_validator(mode="before")
+    def validate_date(cls, values):
+        if values.get("python_root") is None:
+            values["python_root"] = values.get("base_directory")
+        return values
+
+    @staticmethod
+    def get_pyproject_file_path(params: dict[str, Any]) -> Path | None:
+        if params.get("pyproject_file") is None:
+            return params.pop("pyproject_file")
+        elif pyproject_file := find_pyproject_file(params["base_directory"]):
+            return pyproject_file
+        elif params.get("python_root"):
+            return params["python_root"] / "pyproject.toml"
+        return None
+
     @classmethod
-    def from_pyproject_toml(cls, pyproject_file: Path) -> "PyTraceabilityConfig":
-        """Create a PyTraceabilityConfig from a pyproject.toml file."""
-        if not pyproject_file.exists():
-            raise FileNotFoundError(f"pyproject.toml file not found: {pyproject_file}")
-        contents = tomli.loads(pyproject_file.read_text())
-        return cls(
-            repo_root=get_repo_root(pyproject_file.parent),
-            **contents["tool"][PROJECT_NAME],
-        )
+    def from_command_line_arguments(
+        cls, cli_params: dict[str, Any]
+    ) -> PyTraceabilityConfig:
+        pyproject_file_path = cls.get_pyproject_file_path(cli_params)
+        if pyproject_file_path is not None:
+            pyproject_contents = tomli.loads(pyproject_file_path.read_text())["tool"][
+                PROJECT_NAME
+            ]
+        else:
+            pyproject_contents = {}
+        config = ChainMap(cli_params, pyproject_contents)
+        return cls(**config)
 
 
 def find_pyproject_file(path_in_repo: Path) -> Path:
@@ -62,5 +92,10 @@ def get_repo_root(path_in_repo):
 
 
 def find_and_parse_config(path_in_repo: Path) -> PyTraceabilityConfig:
-    pyproject_file = find_pyproject_file(path_in_repo)
-    return PyTraceabilityConfig.from_pyproject_toml(pyproject_file)
+    pyproject_file_path = find_pyproject_file(path_in_repo)
+    pyproject_contents = tomli.loads(pyproject_file_path.read_text())["tool"][
+        PROJECT_NAME
+    ]
+    return PyTraceabilityConfig(
+        base_directory=pyproject_file_path.parent, **pyproject_contents
+    )

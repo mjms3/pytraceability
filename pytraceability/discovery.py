@@ -36,13 +36,9 @@ def _file_is_excluded(path: Path, exclude_file_patterns: list[str]) -> bool:
     info=f"{PROJECT_NAME} searches a directory for traceability decorators",
 )
 def collect_output_data(
-    dir_path: Path,
-    project_root: Path,
     config: PyTraceabilityConfig,
 ) -> Generator[TraceabilityReport, None, None]:
-    traceability_reports = collect_traceability_from_directory(
-        dir_path, project_root, config
-    )
+    traceability_reports = collect_traceability_from_directory(config)
     if config.git_history_mode == GitHistoryMode.NONE:
         yield from traceability_reports
     elif config.git_history_mode == GitHistoryMode.FUNCTION_HISTORY:
@@ -57,16 +53,14 @@ def collect_output_data(
 
 
 def collect_traceability_from_directory(
-    dir_path: Path,
-    project_root: Path,
     config: PyTraceabilityConfig,
 ) -> Generator[TraceabilityReport, None, None]:
     _log.info("Using exclude patterns %s", config.exclude_patterns)
-    for file_path in dir_path.rglob("*.py"):
+    for file_path in config.base_directory.rglob("*.py"):
         if _file_is_excluded(file_path, config.exclude_patterns):
             _log.debug("Skipping %s", file_path)
             continue
-        yield from extract_traceability_from_file(file_path, project_root, config)
+        yield from extract_traceability_from_file(file_path, config)
 
 
 @pytraceability(
@@ -76,7 +70,6 @@ def collect_traceability_from_directory(
 )
 def extract_traceability_from_file(
     file_path: Path,
-    project_root: Path,
     config: PyTraceabilityConfig,
 ) -> list[TraceabilityReport]:
     extractions = ExtractionResultsList()
@@ -97,9 +90,16 @@ def extract_traceability_from_file(
                 f"The following nodes have dynamic data: {incomplete_extractions}",
             )
         elif config.mode == PyTraceabilityMode.static_plus_dynamic:
+            if config.python_root is None:  # pragma: no cover
+                # Should never actually end up here, because the model_validator will
+                # default this to base_directory, but we can't set it as non-optional
+                # because it would break typing checking at model creation
+                raise ValueError(
+                    f"Python root directory must be set in {PyTraceabilityMode.static_plus_dynamic} mode"
+                )
             extractions.extend(
                 extract_traceabilities_using_module_import(
-                    file_path, project_root, incomplete_extractions
+                    file_path, config.python_root, incomplete_extractions
                 )
             )
         else:  # pragma: no cover

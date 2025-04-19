@@ -9,7 +9,7 @@ from pydriller import Repository, ModifiedFile
 from typing_extensions import Self
 
 from pytraceability.ast_processing import TraceabilityVisitor
-from pytraceability.config import PROJECT_NAME, PyTraceabilityConfig
+from pytraceability.config import PROJECT_NAME, PyTraceabilityConfig, get_repo_root
 from pytraceability.custom import pytraceability
 from pytraceability.data_definition import (
     TraceabilityGitHistory,
@@ -34,7 +34,7 @@ class CurrentFileForKey(Dict[str, Optional[str]]):
                 # TODO: Add a test for when the key is duplicated / enforce this more widely
                 raise ValueError(f"Key {traceability_report.key} is duplicated")
             current_file_for_key[traceability_report.key] = str(
-                traceability_report.file_path.relative_to(config.repo_root)
+                traceability_report.file_path.relative_to(config.base_directory)
             )
         return current_file_for_key
 
@@ -57,7 +57,8 @@ def get_line_based_history(
     )
 
     history: dict[str, list[TraceabilityGitHistory]] = {}
-    for commit in Repository(str(config.repo_root), order="reverse").traverse_commits():
+    repo_root = get_repo_root(config.base_directory)
+    for commit in Repository(str(repo_root), order="reverse").traverse_commits():
         # TODO - handle timezones correctly
         if (
             config.since is not None

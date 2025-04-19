@@ -27,7 +27,7 @@ from tests.examples import (
     method_on_a_class_with_traceability,
     method_on_a_class_with_key_in_a_variable,
 )
-from tests.factories import TEST_ROOT, TEST_CONFIG, _test_from_module
+from tests.factories import TEST_CONFIG, _test_from_module
 from tests.utils import M
 
 
@@ -91,10 +91,9 @@ def test_closure_with_dynamic_metadata():
 
 def test_collect_from_directory():
     file_path = Path(__file__).parent / "examples/separate_directory"
+    config = TEST_CONFIG.model_copy(update={"base_directory": file_path})
 
-    actual = sorted(
-        collect_output_data(file_path, TEST_ROOT, TEST_CONFIG), key=attrgetter("key")
-    )
+    actual = sorted(collect_output_data(config), key=attrgetter("key"))
     expected = [
         M(
             TraceabilityReport,
@@ -122,8 +121,10 @@ def test_collect_from_directory():
 
 def test_filename_exclusion():
     file_path = Path(function_with_traceability.__file__).parent
-    config = TEST_CONFIG.model_copy(update={"exclude_patterns": ["*test*"]})
-    assert list(collect_output_data(file_path, TEST_ROOT, config)) == []
+    config = TEST_CONFIG.model_copy(
+        update={"exclude_patterns": ["*test*"], "base_directory": file_path}
+    )
+    assert list(collect_output_data(config)) == []
 
 
 def test_invalid_python_file(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
@@ -131,7 +132,7 @@ def test_invalid_python_file(tmp_path: Path, caplog: pytest.LogCaptureFixture) -
     invalid_file = tmp_path / "invalid_file.py"
     invalid_file.write_text("def foo():\n    print('Hello World'")
 
-    config = TEST_CONFIG.model_copy(update={"repo_root": tmp_path})
+    config = TEST_CONFIG.model_copy(update={"base_directory": tmp_path})
 
-    assert list(collect_output_data(tmp_path, tmp_path, config)) == []
+    assert list(collect_output_data(config)) == []
     assert "Ignoring file due to syntax error" in caplog.text

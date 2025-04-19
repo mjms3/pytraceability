@@ -27,7 +27,7 @@ json_output = [
             OutputFormats.KEY_ONLY,
             [
                 "Extracting traceability from {base_dir}",
-                "Using project root: {base_dir}",
+                "Using python root: {base_dir}",
                 *common_output,
             ],
         ),

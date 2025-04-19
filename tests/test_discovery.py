@@ -12,9 +12,7 @@ from pytraceability.data_definition import (
     TraceabilityReport,
     RawCode,
 )
-from pytraceability.discovery import (
-    collect_output_data,
-)
+from pytraceability.discovery import PyTraceabilityCollector
 from pytraceability.exceptions import InvalidTraceabilityError
 from tests.examples import (
     function_with_traceability,
@@ -92,7 +90,7 @@ def test_closure_with_dynamic_metadata():
 def test_collect_from_directory(directory_with_two_files):
     config = TEST_CONFIG.model_copy(update={"base_directory": directory_with_two_files})
 
-    actual = sorted(collect_output_data(config), key=attrgetter("key"))
+    actual = sorted(PyTraceabilityCollector(config).collect(), key=attrgetter("key"))
     expected = [
         M(
             TraceabilityReport,
@@ -123,7 +121,7 @@ def test_filename_exclusion():
     config = TEST_CONFIG.model_copy(
         update={"exclude_patterns": ["*test*"], "base_directory": file_path}
     )
-    assert list(collect_output_data(config)) == []
+    assert list(PyTraceabilityCollector(config).collect()) == []
 
 
 def test_invalid_python_file(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
@@ -133,5 +131,5 @@ def test_invalid_python_file(tmp_path: Path, caplog: pytest.LogCaptureFixture) -
 
     config = TEST_CONFIG.model_copy(update={"base_directory": tmp_path})
 
-    assert list(collect_output_data(config)) == []
+    assert list(PyTraceabilityCollector(config).collect()) == []
     assert "Ignoring file due to syntax error" in caplog.text

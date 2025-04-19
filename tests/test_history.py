@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from pytraceability.config import GitHistoryMode, PyTraceabilityConfig
 from pytraceability.data_definition import TraceabilityGitHistory
-from pytraceability.discovery import collect_output_data
+from pytraceability.discovery import PyTraceabilityCollector
 from tests.utils import M
 
 GIT_HISTORY_TESTS_DIR = Path(__file__).parent / "git_history_tests"
@@ -195,7 +195,7 @@ def run_history_test(
                 git_repo.index.add(source_file)
             git_repo.index.commit(commit_state.msg)
 
-    reports = list(collect_output_data(config))
+    reports = list(PyTraceabilityCollector(config).collect())
     assert len(reports) == len(history_test_info)
 
     expected_history = {

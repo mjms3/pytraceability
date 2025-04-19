@@ -14,8 +14,8 @@ from pytraceability.config import (
     GitHistoryMode,
     OutputFormats,
 )
-from pytraceability.discovery import collect_output_data
-from pytraceability.logging import setup_logging  # Import logging setup
+from pytraceability.discovery import PyTraceabilityCollector
+from pytraceability.logging import setup_logging
 
 
 def strip_kwargs(f):
@@ -78,7 +78,7 @@ def main(ctx):
         click.echo(f"Using python root: {config.python_root}")
 
     for result in sorted(
-        collect_output_data(config),
+        PyTraceabilityCollector(config).collect(),
         key=attrgetter("key"),
     ):
         if config.output_format == OutputFormats.KEY_ONLY:

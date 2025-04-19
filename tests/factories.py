@@ -13,7 +13,7 @@ from pytraceability.data_definition import (
     TraceabilityGitHistory,
     TraceabilityReport,
 )
-from pytraceability.discovery import extract_traceability_from_file
+from pytraceability.discovery import PyTraceabilityCollector
 from tests.utils import M
 
 TEST_ROOT = Path(__file__).parent
@@ -36,7 +36,9 @@ def _test_from_module(
     if module.__file__ is None:
         raise ValueError(f"module.__file__ is None. Module: {module}")
     file_path = Path(module.__file__)
-    actual = list(extract_traceability_from_file(file_path, config))
+    actual = list(
+        PyTraceabilityCollector(config).extract_traceability_from_file(file_path)
+    )
     expected = [
         M(
             TraceabilityReport,

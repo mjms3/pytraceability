@@ -74,7 +74,9 @@ def extract_traceability_from_file(
 ) -> list[TraceabilityReport]:
     extractions = ExtractionResultsList()
     incomplete_extractions = []
-    for extraction in extract_traceability_from_file_using_ast(file_path, config):
+    for extraction in extract_traceability_from_file_using_ast(
+        file_path, config.decorator_name
+    ):
         if all(t.is_complete for t in extraction.traceability_data):
             extractions.append(extraction)
         else:

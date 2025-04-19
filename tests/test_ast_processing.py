@@ -9,12 +9,12 @@ from textwrap import dedent
 import pytest
 
 from pytraceability.ast_processing import TraceabilityVisitor, RawCode
-from pytraceability.exceptions import InvalidTraceabilityError
+from pytraceability.common import STANDARD_DECORATOR_NAME
 from pytraceability.data_definition import (
     ExtractionResult,
     Traceability,
 )
-from tests.factories import TEST_CONFIG
+from pytraceability.exceptions import InvalidTraceabilityError
 
 _FILE_PATH = Path(__file__)
 
@@ -82,7 +82,9 @@ def test_statically_extract_traceability_decorators(
         pass
     """)
     tree = ast.parse(source_code)
-    decorators = TraceabilityVisitor(TEST_CONFIG, _FILE_PATH, source_code).visit(tree)
+    decorators = TraceabilityVisitor(
+        STANDARD_DECORATOR_NAME, _FILE_PATH, source_code
+    ).visit(tree)
     assert decorators == [
         ExtractionResult(
             file_path=_FILE_PATH,
@@ -104,7 +106,9 @@ def test_can_statically_extract_stacked_traceability_decorators():
         pass
     """)
     tree = ast.parse(source_code)
-    decorators = TraceabilityVisitor(TEST_CONFIG, _FILE_PATH, source_code).visit(tree)
+    decorators = TraceabilityVisitor(
+        STANDARD_DECORATOR_NAME, _FILE_PATH, source_code
+    ).visit(tree)
     assert decorators == [
         ExtractionResult(
             file_path=_FILE_PATH,
@@ -127,7 +131,9 @@ def test_key_must_be_specified():
     """)
     tree = ast.parse(source_code)
     with pytest.raises(InvalidTraceabilityError):
-        TraceabilityVisitor(TEST_CONFIG, _FILE_PATH, source_code).visit(tree)
+        TraceabilityVisitor(STANDARD_DECORATOR_NAME, _FILE_PATH, source_code).visit(
+            tree
+        )
 
 
 @pytest.mark.parametrize(
@@ -145,7 +151,12 @@ def test_other_decorators_are_ignored(decorator):
         pass
     """)
     tree = ast.parse(source_code)
-    assert TraceabilityVisitor(TEST_CONFIG, _FILE_PATH, source_code).visit(tree) == []
+    assert (
+        TraceabilityVisitor(STANDARD_DECORATOR_NAME, _FILE_PATH, source_code).visit(
+            tree
+        )
+        == []
+    )
 
 
 def test_cannot_have_two_args():
@@ -156,4 +167,6 @@ def test_cannot_have_two_args():
     """)
     tree = ast.parse(source_code)
     with pytest.raises(InvalidTraceabilityError):
-        TraceabilityVisitor(TEST_CONFIG, _FILE_PATH, source_code).visit(tree)
+        TraceabilityVisitor(STANDARD_DECORATOR_NAME, _FILE_PATH, source_code).visit(
+            tree
+        )

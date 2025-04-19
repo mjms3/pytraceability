@@ -18,7 +18,7 @@ from pytraceability.data_definition import (
     Traceability,
     RawCode,
 )
-from pytraceability.config import PyTraceabilityConfig, PROJECT_NAME
+from pytraceability.config import PROJECT_NAME
 
 _log = logging.getLogger(__name__)
 
@@ -30,19 +30,17 @@ globals_ = {
 
 
 class TraceabilityVisitor(ast.NodeVisitor):
-    def __init__(
-        self, config: PyTraceabilityConfig, file_path: Path, source_code: str
-    ) -> None:
-        self.config = config
+    def __init__(self, decorator_name: str, file_path: Path, source_code: str) -> None:
+        self.decorator_name = decorator_name
         self.file_path = file_path
         self.source_code = source_code
 
         self.stack = []
-        self.traceability_data: list[ExtractionResult] = []
+        self.extraction_results: list[ExtractionResult] = []
 
     def visit(self, node):
         super().visit(node)
-        return self.traceability_data
+        return self.extraction_results
 
     def safe_eval(self, node, globals_=None):
         try:
@@ -113,13 +111,13 @@ class TraceabilityVisitor(ast.NodeVisitor):
                 decorator.func, ast.Attribute
             ):
                 continue
-            if decorator.func.id == self.config.decorator_name:
+            if decorator.func.id == self.decorator_name:
                 traceability.append(
                     self._extract_traceability_from_decorator(decorator)
                 )
 
         if len(traceability) > 0:
-            self.traceability_data.append(
+            self.extraction_results.append(
                 ExtractionResult(
                     file_path=self.file_path,
                     function_name=".".join(self.stack),
@@ -147,7 +145,7 @@ class TraceabilityVisitor(ast.NodeVisitor):
     info=f"{PROJECT_NAME} extracts traceability info from the decorators statically",
 )
 def extract_traceability_from_file_using_ast(
-    file_path: Path, config: PyTraceabilityConfig
+    file_path: Path, decorator_name: str
 ) -> list[ExtractionResult]:
     _log.info("Extracting traceability from file: %s", file_path)
     with open(file_path, "r") as f:
@@ -158,5 +156,5 @@ def extract_traceability_from_file_using_ast(
             _log.warning(f"Ignoring file due to syntax error: {file_path}")
             return []
         return TraceabilityVisitor(
-            config, file_path=file_path, source_code=source_code
+            decorator_name, file_path=file_path, source_code=source_code
         ).visit(tree)

@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+  py38:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: "3.8"
+    container_name: test_py38
+
+  py39:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: "3.9"
+    container_name: test_py39
+
+  py310:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: "3.10"
+    container_name: test_py310
+
+  py311:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: "3.11"
+    container_name: test_py311
+
+  py312:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: "3.12"
+    container_name: test_py312
+
+  py313:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: "3.13"
+    container_name: test_py313

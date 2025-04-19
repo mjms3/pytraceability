@@ -21,11 +21,6 @@ DECORATOR_MOVED_TO_ANOTHER_FILE = "decorator moved to another file"
 
 
 @pytest.fixture()
-def git_repo(tmp_path: Path) -> Repo:
-    return Repo.init(tmp_path)
-
-
-@pytest.fixture()
 def config(tmp_path: Path) -> PyTraceabilityConfig:
     return PyTraceabilityConfig(
         base_directory=tmp_path,

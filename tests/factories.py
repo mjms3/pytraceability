@@ -20,7 +20,7 @@ TEST_ROOT = Path(__file__).parent
 THIS_REPO_ROOT = get_repo_root(TEST_ROOT)
 TEST_CONFIG = PyTraceabilityConfig(
     base_directory=TEST_ROOT,
-    mode=PyTraceabilityMode.static_plus_dynamic,
+    mode=PyTraceabilityMode.STATIC_PLUS_DYNAMIC,
 )
 
 

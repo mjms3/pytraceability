@@ -55,7 +55,7 @@ class TraceabilityVisitor(ast.NodeVisitor):
             except Exception as e2:
                 source = ast.get_source_segment(self.source_code, node)
                 _log.debug(f"eval failed for node: {source} — {e2}")
-                return RawCode(source)
+                return RawCode(code=source)
 
     def walk_arg_definition(self, node, globals_=None):
         if isinstance(node, ast.Dict):

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import functools
-import os
 import sys
 from datetime import datetime
 from operator import attrgetter
@@ -9,7 +8,6 @@ from pathlib import Path
 
 import click
 
-from pytraceability.common import STANDARD_DECORATOR_NAME
 from pytraceability.config import (
     PyTraceabilityConfig,
     PyTraceabilityMode,
@@ -31,23 +29,20 @@ def strip_kwargs(f):
 
 
 @click.command()
-@click.option("--base-directory", type=Path, default=Path(os.getcwd()))
-@click.option("--decorator-name", type=str, default=STANDARD_DECORATOR_NAME)
+@click.option("--base-directory", type=Path, default=None)
+@click.option("--decorator-name", type=str)
 @click.option(
     "--output-format",
     type=click.Choice([o.value for o in OutputFormats]),
-    default=OutputFormats.KEY_ONLY,
 )
 @click.option(
     "--mode",
     type=click.Choice([o.value for o in PyTraceabilityMode]),
-    default=PyTraceabilityMode.static_only,
 )
 @click.option("--python-root", type=Path, default=None)
 @click.option(
     "--git-history-mode",
     type=click.Choice([o.value for o in GitHistoryMode]),
-    default=GitHistoryMode.NONE,
 )
 @click.option(
     "--since",

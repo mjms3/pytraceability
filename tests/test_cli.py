@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -14,8 +13,8 @@ common_output = [
 ]
 
 json_output = [
-    '{{"file_path":"{base_dir}/file1.py","function_name":"foo","line_number":5,"end_line_number":6,"source_code":"def foo():\\n    pass","key":"KEY-1","metadata":{{}},"history":null,"is_complete":true}}',
-    '{{"file_path":"{base_dir}/file2.py","function_name":"foo","line_number":5,"end_line_number":6,"source_code":"def foo():\\n    pass","key":"KEY-2","metadata":{{}},"history":null,"is_complete":true}}',
+    '{{"file_path":"{base_dir}/file1.py","function_name":"foo","line_number":2,"end_line_number":3,"source_code":"def foo():\\n    pass","key":"KEY-1","metadata":{{}},"history":null,"is_complete":true}}',
+    '{{"file_path":"{base_dir}/file2.py","function_name":"foo","line_number":2,"end_line_number":3,"source_code":"def foo():\\n    pass","key":"KEY-2","metadata":{{}},"history":null,"is_complete":true}}',
 ]
 
 
@@ -35,11 +34,10 @@ json_output = [
         (False, OutputFormats.JSON, json_output),
     ],
 )
-def test_cli(isatty, output_format, expected_output):
-    base_dir = Path(__file__).parent / "examples/separate_directory"
+def test_cli(isatty, output_format, expected_output, directory_with_two_files):
+    base_dir = directory_with_two_files
     argv = [
         f"--base-directory={base_dir}",
-        "--decorator-name=traceability",
         f"--output-format={output_format.value}",
     ]
     runner = CliRunner()

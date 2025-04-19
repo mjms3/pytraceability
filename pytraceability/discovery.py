@@ -84,18 +84,21 @@ def extract_traceability_from_file(
             "%s traceability decorators could not be extracted statically.",
             len(incomplete_extractions),
         )
-        if config.mode == PyTraceabilityMode.static_only:
+        if config.mode == PyTraceabilityMode.STATIC_ONLY:
             raise InvalidTraceabilityError.from_allowed_message_types(
                 TraceabilityErrorMessages.STATIC_MODE,
                 f"The following nodes have dynamic data: {incomplete_extractions}",
             )
-        elif config.mode == PyTraceabilityMode.static_plus_dynamic:
+        elif config.mode == PyTraceabilityMode.ALLOW_RAW_SOURCE_CODE:
+            _log.info('"Allowing raw source code to be used for traceability"')
+            extractions.extend(incomplete_extractions)
+        elif config.mode == PyTraceabilityMode.STATIC_PLUS_DYNAMIC:
             if config.python_root is None:  # pragma: no cover
                 # Should never actually end up here, because the model_validator will
                 # default this to base_directory, but we can't set it as non-optional
                 # because it would break typing checking at model creation
                 raise ValueError(
-                    f"Python root directory must be set in {PyTraceabilityMode.static_plus_dynamic} mode"
+                    f"Python root directory must be set in {PyTraceabilityMode.STATIC_PLUS_DYNAMIC} mode"
                 )
             extractions.extend(
                 extract_traceabilities_using_module_import(

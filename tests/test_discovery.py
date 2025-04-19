@@ -62,7 +62,7 @@ def test_key_must_be_static(module):
 
 def test_static_mode_errors_if_unable_to_get_traceability_data_statically() -> None:
     static_only_config = TEST_CONFIG.model_copy(
-        update={"mode": PyTraceabilityMode.static_only}
+        update={"mode": PyTraceabilityMode.STATIC_ONLY}
     )
     with pytest.raises(InvalidTraceabilityError):
         _test_from_module(
@@ -83,34 +83,33 @@ def test_closure_with_dynamic_metadata():
     _test_from_module(
         closure_with_metadata_in_a_variable,
         function_name="foo.bar",
-        metadata={"a": RawCode("METADATA")},
+        metadata={"a": RawCode(code="METADATA")},
         line_num_offset=6,
         is_complete=False,
     )
 
 
-def test_collect_from_directory():
-    file_path = Path(__file__).parent / "examples/separate_directory"
-    config = TEST_CONFIG.model_copy(update={"base_directory": file_path})
+def test_collect_from_directory(directory_with_two_files):
+    config = TEST_CONFIG.model_copy(update={"base_directory": directory_with_two_files})
 
     actual = sorted(collect_output_data(config), key=attrgetter("key"))
     expected = [
         M(
             TraceabilityReport,
-            file_path=file_path / "file1.py",
+            file_path=directory_with_two_files / "file1.py",
             function_name="foo",
-            line_number=5,
-            end_line_number=6,
+            line_number=2,
+            end_line_number=3,
             key="KEY-1",
             metadata={},
             is_complete=True,
         ),
         M(
             TraceabilityReport,
-            file_path=file_path / "file2.py",
+            file_path=directory_with_two_files / "file2.py",
             function_name="foo",
-            line_number=5,
-            end_line_number=6,
+            line_number=2,
+            end_line_number=3,
             key="KEY-2",
             metadata={},
             is_complete=True,

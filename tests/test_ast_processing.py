@@ -37,12 +37,12 @@ def foo():
         ("info={'key': 'value'}", {"info": {"key": "value"}}, True),
         (
             "info=f'{var} something'",
-            {"info": RawCode("f'{var} something'")},
+            {"info": RawCode(code="f'{var} something'")},
             False,
         ),
         (
             "info=[f'{var} something']",
-            {"info": [RawCode("f'{var} something'")]},
+            {"info": [RawCode(code="f'{var} something'")]},
             False,
         ),
         ("info={'item1', 'item2'}", {"info": {"item1", "item2"}}, True),
@@ -58,7 +58,7 @@ def foo():
         ),
         (
             "info=[x+y for x in range(2)]",
-            {"info": RawCode("[x+y for x in range(2)]")},
+            {"info": RawCode(code="[x+y for x in range(2)]")},
             False,
         ),
         (

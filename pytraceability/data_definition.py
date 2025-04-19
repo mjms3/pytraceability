@@ -10,18 +10,8 @@ from pydantic import BaseModel, Field, computed_field
 MetaDataType = Mapping[str, Any]
 
 
-class RawCode:
-    def __init__(self, code: str | None):
-        self.code = code
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self.code!r})"
-
-    def __eq__(self, other):
-        return self.code == other.code
-
-    def __hash__(self):
-        return hash(self.code)
+class RawCode(BaseModel):
+    code: str | None
 
 
 class Traceability(BaseModel):
@@ -78,6 +68,7 @@ class ExtractionResultsList(List[ExtractionResult]):
             for traceability_data in extraction_result.traceability_data:
                 kwargs = traceability_data.model_dump()
                 kwargs.update(extraction_result_as_dict)
+                kwargs["metadata"] = traceability_data.metadata
                 yield TraceabilityReport(**kwargs)
 
     def flatten(self) -> list[TraceabilityReport]:

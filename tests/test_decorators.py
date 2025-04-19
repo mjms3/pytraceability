@@ -31,9 +31,10 @@ def test_traceability_decorators_stack():
     ]
 
 
-@pytest.mark.raises(exception=ValueError)
 def test_the_same_key_cannot_be_used_twice_on_a_function():
-    @traceability("KEY")
-    @traceability("KEY")
-    def foo(x):
-        return x + 1
+    with pytest.raises(ValueError):
+
+        @traceability("KEY")
+        @traceability("KEY")
+        def foo(x):
+            return x + 1

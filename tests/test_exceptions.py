@@ -13,6 +13,6 @@ def test_all_InvalidTraceabilityErrors_are_documented():
     )  # Would be nice to do this by type checking
 
 
-@pytest.mark.raises(exception=ValueError)
 def test_cant_create_a_InvalidTraceabilityError_with_an_undocumeneted_message():
-    InvalidTraceabilityError("A random error message")
+    with pytest.raises(ValueError):
+        InvalidTraceabilityError("A random error message")

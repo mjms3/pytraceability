@@ -60,14 +60,14 @@ def test_key_must_be_static(module):
         _test_from_module(module)
 
 
-@pytest.mark.raises(exception=InvalidTraceabilityError)
 def test_static_mode_errors_if_unable_to_get_traceability_data_statically() -> None:
     static_only_config = TEST_CONFIG.model_copy(
         update={"mode": PyTraceabilityMode.static_only}
     )
-    _test_from_module(
-        function_with_traceability_key_in_a_variable, config=static_only_config
-    )
+    with pytest.raises(InvalidTraceabilityError):
+        _test_from_module(
+            function_with_traceability_key_in_a_variable, config=static_only_config
+        )
 
 
 def test_closure_with_dynamic_key():

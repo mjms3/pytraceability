@@ -119,7 +119,6 @@ def test_can_statically_extract_stacked_traceability_decorators():
     ]
 
 
-@pytest.mark.raises(exception=InvalidTraceabilityError)
 def test_key_must_be_specified():
     source_code = dedent("""\
     @traceability()
@@ -127,7 +126,8 @@ def test_key_must_be_specified():
         pass
     """)
     tree = ast.parse(source_code)
-    TraceabilityVisitor(TEST_CONFIG, _FILE_PATH, source_code).visit(tree)
+    with pytest.raises(InvalidTraceabilityError):
+        TraceabilityVisitor(TEST_CONFIG, _FILE_PATH, source_code).visit(tree)
 
 
 @pytest.mark.parametrize(
@@ -148,7 +148,6 @@ def test_other_decorators_are_ignored(decorator):
     assert TraceabilityVisitor(TEST_CONFIG, _FILE_PATH, source_code).visit(tree) == []
 
 
-@pytest.mark.raises(exception=InvalidTraceabilityError)
 def test_cannot_have_two_args():
     source_code = dedent("""\
     @traceability('key1','key2')
@@ -156,4 +155,5 @@ def test_cannot_have_two_args():
         pass
     """)
     tree = ast.parse(source_code)
-    TraceabilityVisitor(TEST_CONFIG, _FILE_PATH, source_code).visit(tree)
+    with pytest.raises(InvalidTraceabilityError):
+        TraceabilityVisitor(TEST_CONFIG, _FILE_PATH, source_code).visit(tree)

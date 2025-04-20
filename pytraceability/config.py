@@ -31,6 +31,7 @@ class GitHistoryMode(str, Enum):
 class OutputFormats(str, Enum):
     KEY_ONLY = "key-only"
     JSON = "json"
+    HTML = "html"
 
 
 def _load_config_from_pyproject_file(pyproject_file: Path) -> dict[str, Any]:

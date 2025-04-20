@@ -21,6 +21,7 @@ from pytraceability.data_definition import (
     TraceabilitySummary,
 )
 from pytraceability.history import get_line_based_history
+from pytraceability.html import render_traceability_summary_html
 from pytraceability.import_processing import extract_traceabilities_using_module_import
 
 _log = logging.getLogger(__name__)
@@ -106,5 +107,9 @@ class PyTraceabilityCollector:
             yield from (report.key for report in reports)
         elif self.config.output_format == OutputFormats.JSON:
             yield TraceabilitySummary(reports=reports).model_dump_json(indent=2)
+        elif self.config.output_format == OutputFormats.HTML:
+            yield from render_traceability_summary_html(
+                TraceabilitySummary(reports=reports)
+            )
         else:
             raise ValueError(f"Unsupported output format: {self.config.output_format}")

@@ -9,6 +9,7 @@ from pydriller import Repository, ModifiedFile
 from typing_extensions import Self
 
 from pytraceability.ast_processing import TraceabilityVisitor
+from pytraceability.common import file_is_excluded
 from pytraceability.config import PROJECT_NAME, PyTraceabilityConfig, get_repo_root
 from pytraceability.custom import pytraceability
 from pytraceability.data_definition import (
@@ -81,6 +82,9 @@ def get_line_based_history(
                 modified_file.source_code is None
                 or modified_file.new_path is None
                 or not modified_file.new_path.endswith("py")
+                or file_is_excluded(
+                    Path(modified_file.new_path), config.exclude_patterns
+                )
             ):
                 continue
             _log.debug("Processing file %s", modified_file.new_path)

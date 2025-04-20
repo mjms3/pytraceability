@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+import fnmatch
+from pathlib import Path
 from typing import Any, Mapping
 
 from pytraceability.data_definition import Traceability
@@ -22,3 +26,7 @@ class traceability:
 
 
 STANDARD_DECORATOR_NAME = traceability.__name__
+
+
+def file_is_excluded(path: Path, exclude_file_patterns: list[str]) -> bool:
+    return any(fnmatch.fnmatch(str(path), pat) for pat in exclude_file_patterns)

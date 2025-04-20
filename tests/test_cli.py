@@ -13,8 +13,32 @@ common_output = [
 ]
 
 json_output = [
-    '{{"key":"KEY-1","metadata":{{}},"file_path":"{base_dir}/file1.py","function_name":"foo","line_number":2,"end_line_number":3,"source_code":"def foo():\\n    pass","history":null,"contains_raw_source_code":false}}',
-    '{{"key":"KEY-2","metadata":{{}},"file_path":"{base_dir}/file2.py","function_name":"foo","line_number":2,"end_line_number":3,"source_code":"def foo():\\n    pass","history":null,"contains_raw_source_code":false}}',
+    "{",
+    '  "reports": [',
+    "    {",
+    '      "key": "KEY-1",',
+    '      "metadata": {},',
+    '      "file_path": "{base_dir}/file1.py",',
+    '      "function_name": "foo",',
+    '      "line_number": 2,',
+    '      "end_line_number": 3,',
+    '      "source_code": "def foo():\\n    pass",',
+    '      "history": null,',
+    '      "contains_raw_source_code": false',
+    "    },",
+    "    {",
+    '      "key": "KEY-2",',
+    '      "metadata": {},',
+    '      "file_path": "{base_dir}/file2.py",',
+    '      "function_name": "foo",',
+    '      "line_number": 2,',
+    '      "end_line_number": 3,',
+    '      "source_code": "def foo():\\n    pass",',
+    '      "history": null,',
+    '      "contains_raw_source_code": false',
+    "    }",
+    "  ]",
+    "}",
 ]
 
 
@@ -47,7 +71,8 @@ def test_cli(isatty, output_format, expected_output, directory_with_two_files):
 
     assert result.exit_code == 0, result.output
     assert result.output.strip().split(os.linesep) == [
-        line.format(base_dir=base_dir) for line in expected_output
+        line.format(base_dir=base_dir) if "base_dir" in line else line
+        for line in expected_output
     ]
 
 

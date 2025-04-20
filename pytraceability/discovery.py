@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import fnmatch
 import logging
 from itertools import groupby
 from operator import attrgetter
@@ -8,24 +7,23 @@ from pathlib import Path
 from typing import Generator
 
 from pytraceability.ast_processing import extract_traceability_from_file_using_ast
+from pytraceability.common import file_is_excluded
 from pytraceability.config import (
     PyTraceabilityMode,
     PyTraceabilityConfig,
     PROJECT_NAME,
     GitHistoryMode,
+    OutputFormats,
 )
 from pytraceability.custom import pytraceability
 from pytraceability.data_definition import (
     TraceabilityReport,
+    TraceabilitySummary,
 )
 from pytraceability.history import get_line_based_history
 from pytraceability.import_processing import extract_traceabilities_using_module_import
 
 _log = logging.getLogger(__name__)
-
-
-def _file_is_excluded(path: Path, exclude_file_patterns: list[str]) -> bool:
-    return any(fnmatch.fnmatch(str(path), pat) for pat in exclude_file_patterns)
 
 
 class PyTraceabilityCollector:
@@ -39,7 +37,7 @@ class PyTraceabilityCollector:
     def _get_file_paths(self) -> Generator[Path, None, None]:
         _log.info("Using exclude patterns %s", self.config.exclude_patterns)
         for file_path in self.config.base_directory.rglob("*.py"):
-            if _file_is_excluded(file_path, self.config.exclude_patterns):
+            if file_is_excluded(file_path, self.config.exclude_patterns):
                 _log.debug("Skipping %s", file_path)
                 continue
             yield file_path
@@ -99,3 +97,14 @@ class PyTraceabilityCollector:
                 f"Unsupported git history mode: {self.config.git_history_mode}"
             )
         return list(traceability_reports.values())
+
+    def get_printable_output(self) -> Generator[str, None, None]:
+        reports = self.collect()
+        reports.sort(key=attrgetter("key"))
+
+        if self.config.output_format == OutputFormats.KEY_ONLY:
+            yield from (report.key for report in reports)
+        elif self.config.output_format == OutputFormats.JSON:
+            yield TraceabilitySummary(reports=reports).model_dump_json(indent=2)
+        else:
+            raise ValueError(f"Unsupported output format: {self.config.output_format}")

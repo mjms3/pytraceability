@@ -51,3 +51,7 @@ class TraceabilityReport(Traceability):
     end_line_number: int | None
     source_code: str | None
     history: list[TraceabilityGitHistory] | None = None
+
+
+class TraceabilitySummary(BaseModel):
+    reports: list[TraceabilityReport]

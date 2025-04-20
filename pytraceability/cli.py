@@ -3,7 +3,6 @@ from __future__ import annotations
 import functools
 import sys
 from datetime import datetime
-from operator import attrgetter
 from pathlib import Path
 
 import click
@@ -77,16 +76,8 @@ def main(ctx):
         click.echo(f"Extracting traceability from {config.base_directory}")
         click.echo(f"Using python root: {config.python_root}")
 
-    for result in sorted(
-        PyTraceabilityCollector(config).collect(),
-        key=attrgetter("key"),
-    ):
-        if config.output_format == OutputFormats.KEY_ONLY:
-            click.echo(result.key)
-        elif config.output_format == OutputFormats.JSON:
-            click.echo(result.model_dump_json())
-        else:  # pragma: no cover
-            raise ValueError(f"Unknown output format: {config.output_format}")
+    for output_line in PyTraceabilityCollector(config).get_printable_output():
+        click.echo(output_line)
 
 
 if __name__ == "__main__":  # pragma: no cover

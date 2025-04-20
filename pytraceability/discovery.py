@@ -32,6 +32,10 @@ class PyTraceabilityCollector:
     def __init__(self, config: PyTraceabilityConfig) -> None:
         self.config = config
 
+    @pytraceability(
+        "PYTRACEABILITY-1",
+        info=f"{PROJECT_NAME} searches a directory for traceability decorators",
+    )
     def _get_file_paths(self) -> Generator[Path, None, None]:
         _log.info("Using exclude patterns %s", self.config.exclude_patterns)
         for file_path in self.config.base_directory.rglob("*.py"):
@@ -40,10 +44,6 @@ class PyTraceabilityCollector:
                 continue
             yield file_path
 
-    @pytraceability(
-        "PYTRACEABILITY-1",
-        info=f"{PROJECT_NAME} searches a directory for traceability decorators",
-    )
     @pytraceability(
         "PYTRACEABILITY-3",
         info=f"If {PROJECT_NAME} can't extract data statically, it has the option "

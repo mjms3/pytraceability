@@ -3,14 +3,16 @@ from __future__ import annotations
 import logging
 from importlib import util
 from pathlib import Path
-from typing import Generator
+from typing import Generator, Iterator
 
 from pytraceability.common import (
     Traceability,
 )
 from pytraceability.config import PROJECT_NAME
 from pytraceability.custom import pytraceability
-from pytraceability.data_definition import ExtractionResult
+from pytraceability.data_definition import (
+    TraceabilityReport,
+)
 from pytraceability.exceptions import (
     InvalidTraceabilityError,
 )
@@ -46,7 +48,7 @@ def _load_python_module(
     return module
 
 
-def _extract_traceability(module, node_name) -> list[Traceability] | None:
+def _extract_traceability(module, node_name) -> Generator[Traceability, None, None]:
     current_top_level_object = module
     attribute_path_to_node = node_name.split(".")
     for attribute in attribute_path_to_node[:-1]:
@@ -54,8 +56,8 @@ def _extract_traceability(module, node_name) -> list[Traceability] | None:
     if imported_callable := getattr(
         current_top_level_object, attribute_path_to_node[-1], None
     ):
-        return imported_callable.__traceability__
-    return None
+        for traceability in imported_callable.__traceability__:
+            yield traceability
 
 
 @pytraceability(
@@ -67,11 +69,9 @@ def _extract_traceability(module, node_name) -> list[Traceability] | None:
 def extract_traceabilities_using_module_import(
     file_path: Path,
     python_root: Path,
-    extraction_results: list[ExtractionResult],
-) -> Generator[ExtractionResult, None, None]:
+    traceability_reports: Iterator[TraceabilityReport],
+) -> Generator[Traceability, None, None]:
     _log.info("Extracting traceability from %s using module import", file_path)
     module = _load_python_module(file_path, python_root)
-    for extraction in extraction_results:
-        if traceability_data := _extract_traceability(module, extraction.function_name):
-            extraction.traceability_data = traceability_data
-        yield extraction
+    for traceability_report in traceability_reports:
+        yield from _extract_traceability(module, traceability_report.function_name)

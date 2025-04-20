@@ -19,9 +19,8 @@ _log = logging.getLogger(__name__)
 
 
 class PyTraceabilityMode(str, Enum):
-    STATIC_ONLY = "static-only"
-    ALLOW_RAW_SOURCE_CODE = "allow-raw-source-code"
-    STATIC_PLUS_DYNAMIC = "static-plus-dynamic"
+    DEFAULT = "default"
+    MODULE_IMPORT = "module-import"
 
 
 class GitHistoryMode(str, Enum):
@@ -74,7 +73,7 @@ class PyTraceabilityConfig(BaseModel):
     )
     decorator_name: str = STANDARD_DECORATOR_NAME
     exclude_patterns: list[str] = Field(default_factory=list)
-    mode: PyTraceabilityMode = PyTraceabilityMode.STATIC_ONLY
+    mode: PyTraceabilityMode = PyTraceabilityMode.DEFAULT
     git_history_mode: GitHistoryMode = GitHistoryMode.NONE
     output_format: OutputFormats = OutputFormats.KEY_ONLY
     since: datetime | None = None

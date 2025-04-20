@@ -14,7 +14,6 @@ from pytraceability.custom import pytraceability
 from pytraceability.data_definition import (
     TraceabilityGitHistory,
     TraceabilityReport,
-    ExtractionResultsList,
 )
 
 _log = logging.getLogger(__name__)
@@ -86,14 +85,12 @@ def get_line_based_history(
                 continue
             _log.debug("Processing file %s", modified_file.new_path)
             tree = ast.parse(modified_file.source_code, filename=modified_file.new_path)
-            extraction_results = TraceabilityVisitor(
+            traceability_reports = TraceabilityVisitor(
                 config.decorator_name,
                 file_path=Path(modified_file.new_path),
                 source_code=modified_file.source_code,
             ).visit(tree)
-            for traceability_report in ExtractionResultsList(
-                extraction_results
-            ).flatten():
+            for traceability_report in traceability_reports:
                 if traceability_report.key not in history:
                     history[traceability_report.key] = []
                 history[traceability_report.key].append(

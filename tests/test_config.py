@@ -27,7 +27,7 @@ def test_explicit_pyproject_file(tmp_path: Path):
             python_root = "{tmp_path / "src"}"
             decorator_name = "custom_decorator"
             exclude_patterns = ["*test*"]
-            mode = "static-plus-dynamic"
+            mode = "module-import"
             git_history_mode = "none"
             output_format = "json"
             since = "2023-01-01T00:00:00"
@@ -48,7 +48,7 @@ def test_explicit_pyproject_file(tmp_path: Path):
         python_root=tmp_path / "src",
         decorator_name="custom_decorator",
         exclude_patterns=["*test*"],
-        mode=PyTraceabilityMode.STATIC_PLUS_DYNAMIC,
+        mode=PyTraceabilityMode.MODULE_IMPORT,
         git_history_mode=GitHistoryMode.NONE,
         output_format=OutputFormats.JSON,
         since=datetime(2023, 1, 1),

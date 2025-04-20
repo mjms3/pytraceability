@@ -13,8 +13,8 @@ common_output = [
 ]
 
 json_output = [
-    '{{"file_path":"{base_dir}/file1.py","function_name":"foo","line_number":2,"end_line_number":3,"source_code":"def foo():\\n    pass","key":"KEY-1","metadata":{{}},"history":null,"is_complete":true}}',
-    '{{"file_path":"{base_dir}/file2.py","function_name":"foo","line_number":2,"end_line_number":3,"source_code":"def foo():\\n    pass","key":"KEY-2","metadata":{{}},"history":null,"is_complete":true}}',
+    '{{"key":"KEY-1","metadata":{{}},"file_path":"{base_dir}/file1.py","function_name":"foo","line_number":2,"end_line_number":3,"source_code":"def foo():\\n    pass","history":null,"contains_raw_source_code":false}}',
+    '{{"key":"KEY-2","metadata":{{}},"file_path":"{base_dir}/file2.py","function_name":"foo","line_number":2,"end_line_number":3,"source_code":"def foo():\\n    pass","history":null,"contains_raw_source_code":false}}',
 ]
 
 

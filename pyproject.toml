@@ -42,7 +42,7 @@ decorator_name = "pytraceability"
 since = "2025-03-23"
 exclude_patterns = ["*test*"]
 base_directory = "./pytraceability"
-mode = 'static-plus-dynamic'
+mode = 'module-import'
 
 [build-system]
 requires = ["poetry-core>=1.7.1,<2.0.0"]

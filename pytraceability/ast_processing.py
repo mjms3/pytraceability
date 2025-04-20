@@ -14,9 +14,9 @@ from pytraceability.exceptions import (
 )
 from pytraceability.custom import pytraceability
 from pytraceability.data_definition import (
-    ExtractionResult,
     Traceability,
     RawCode,
+    TraceabilityReport,
 )
 from pytraceability.config import PROJECT_NAME
 
@@ -36,7 +36,7 @@ class TraceabilityVisitor(ast.NodeVisitor):
         self.source_code = source_code
 
         self.stack = []
-        self.extraction_results: list[ExtractionResult] = []
+        self.extraction_results: list[TraceabilityReport] = []
 
     def visit(self, node):
         super().visit(node)
@@ -104,7 +104,6 @@ class TraceabilityVisitor(ast.NodeVisitor):
         return Traceability(key=key, metadata=kwargs)
 
     def check_callable_node(self, node):
-        traceability = []
         for decorator in node.decorator_list:
             cast(ast.Call, decorator)
             if not hasattr(decorator, "func") or isinstance(
@@ -112,21 +111,18 @@ class TraceabilityVisitor(ast.NodeVisitor):
             ):
                 continue
             if decorator.func.id == self.decorator_name:
-                traceability.append(
-                    self._extract_traceability_from_decorator(decorator)
+                traceability = self._extract_traceability_from_decorator(decorator)
+                self.extraction_results.append(
+                    TraceabilityReport(
+                        file_path=self.file_path,
+                        function_name=".".join(self.stack),
+                        line_number=node.lineno,
+                        end_line_number=node.end_lineno,
+                        source_code=ast.get_source_segment(self.source_code, node),
+                        key=traceability.key,
+                        metadata=traceability.metadata,
+                    )
                 )
-
-        if len(traceability) > 0:
-            self.extraction_results.append(
-                ExtractionResult(
-                    file_path=self.file_path,
-                    function_name=".".join(self.stack),
-                    line_number=node.lineno,
-                    end_line_number=node.end_lineno,
-                    source_code=ast.get_source_segment(self.source_code, node),
-                    traceability_data=traceability,
-                )
-            )
 
     def generic_visit(self, node):
         if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -146,7 +142,7 @@ class TraceabilityVisitor(ast.NodeVisitor):
 )
 def extract_traceability_from_file_using_ast(
     file_path: Path, decorator_name: str
-) -> list[ExtractionResult]:
+) -> list[TraceabilityReport]:
     _log.info("Extracting traceability from file: %s", file_path)
     with open(file_path, "r") as f:
         source_code = f.read()

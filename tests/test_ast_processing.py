@@ -11,8 +11,7 @@ import pytest
 from pytraceability.ast_processing import TraceabilityVisitor, RawCode
 from pytraceability.common import STANDARD_DECORATOR_NAME
 from pytraceability.data_definition import (
-    ExtractionResult,
-    Traceability,
+    TraceabilityReport,
 )
 from pytraceability.exceptions import InvalidTraceabilityError
 
@@ -24,57 +23,57 @@ def foo():
 
 
 @pytest.mark.parametrize(
-    "metadata,expected_metadata,is_complete",
+    "metadata,expected_metadata,contains_raw_source_code",
     [
-        ("", {}, True),
-        ('info="some info"', {"info": "some info"}, True),
+        ("", {}, False),
+        ('info="some info"', {"info": "some info"}, False),
         (
             'info="some info", version="1.0"',
             {"info": "some info", "version": "1.0"},
-            True,
+            False,
         ),
-        ("info=['info1', 'info2']", {"info": ["info1", "info2"]}, True),
-        ("info={'key': 'value'}", {"info": {"key": "value"}}, True),
+        ("info=['info1', 'info2']", {"info": ["info1", "info2"]}, False),
+        ("info={'key': 'value'}", {"info": {"key": "value"}}, False),
         (
             "info=f'{var} something'",
             {"info": RawCode(code="f'{var} something'")},
-            False,
+            True,
         ),
         (
             "info=[f'{var} something']",
             {"info": [RawCode(code="f'{var} something'")]},
-            False,
+            True,
         ),
-        ("info={'item1', 'item2'}", {"info": {"item1", "item2"}}, True),
+        ("info={'item1', 'item2'}", {"info": {"item1", "item2"}}, False),
         (
             "info=('item1', 'item2')",
             {"info": ("item1", "item2")},
-            True,
+            False,
         ),
         (
             "info=[x**2 for x in range(2)]",
             {"info": [0, 1]},
-            True,
+            False,
         ),
         (
             "info=[x+y for x in range(2)]",
             {"info": RawCode(code="[x+y for x in range(2)]")},
-            False,
+            True,
         ),
         (
             "info=datetime.date(2020,1,1)",
             {"info": date(2020, 1, 1)},
-            True,
+            False,
         ),
         (
             "info=Decimal('1.0')",
             {"info": Decimal("1.0")},
-            True,
+            False,
         ),
     ],
 )
 def test_statically_extract_traceability_decorators(
-    metadata, expected_metadata, is_complete
+    metadata, expected_metadata, contains_raw_source_code
 ):
     source_code = dedent(f"""\
     @traceability("A key", {metadata})
@@ -86,16 +85,17 @@ def test_statically_extract_traceability_decorators(
         STANDARD_DECORATOR_NAME, _FILE_PATH, source_code
     ).visit(tree)
     assert decorators == [
-        ExtractionResult(
+        TraceabilityReport(
             file_path=_FILE_PATH,
             function_name="foo",
             line_number=2,
             end_line_number=3,
             source_code=_fn_def,
-            traceability_data=[Traceability(key="A key", metadata=expected_metadata)],
+            key="A key",
+            metadata=expected_metadata,
         )
     ]
-    assert decorators[0].traceability_data[0].is_complete == is_complete
+    assert decorators[0].contains_raw_source_code == contains_raw_source_code
 
 
 def test_can_statically_extract_stacked_traceability_decorators():
@@ -110,16 +110,16 @@ def test_can_statically_extract_stacked_traceability_decorators():
         STANDARD_DECORATOR_NAME, _FILE_PATH, source_code
     ).visit(tree)
     assert decorators == [
-        ExtractionResult(
+        TraceabilityReport(
             file_path=_FILE_PATH,
             function_name="foo",
             line_number=3,
             end_line_number=4,
             source_code=_fn_def,
-            traceability_data=[
-                Traceability(key=k, metadata={}) for k in ("KEY 1", "KEY 2")
-            ],
+            key=k,
+            metadata={},
         )
+        for k in ("KEY 1", "KEY 2")
     ]
 
 

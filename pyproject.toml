@@ -44,7 +44,6 @@ filterwarnings = [
 
 [tool.pytraceability]
 decorator_name = "pytraceability"
-since = "2025-03-23"
 exclude_patterns = ["*test*"]
 base_directory = "./pytraceability"
 mode = 'module-import'

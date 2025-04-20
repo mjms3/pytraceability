@@ -5,7 +5,6 @@ from collections import ChainMap
 from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
-from datetime import datetime
 from enum import Enum
 from pathlib import Path
 
@@ -77,7 +76,6 @@ class PyTraceabilityConfig(BaseModel):
     mode: PyTraceabilityMode = PyTraceabilityMode.DEFAULT
     git_history_mode: GitHistoryMode = GitHistoryMode.NONE
     output_format: OutputFormats = OutputFormats.KEY_ONLY
-    since: datetime | None = None
 
     @model_validator(mode="before")
     def validate_config(cls, values):

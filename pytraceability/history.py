@@ -59,17 +59,6 @@ def get_line_based_history(
     history: dict[str, list[TraceabilityGitHistory]] = {}
     repo_root = get_repo_root(config.base_directory)
     for commit in Repository(str(repo_root), order="reverse").traverse_commits():
-        # TODO - handle timezones correctly
-        if (
-            config.since is not None
-            and commit.committer_date.timestamp() < config.since.timestamp()
-        ):
-            _log.info(
-                "Ending processing as committer date %s is older than %s",
-                commit.committer_date,
-                config.since,
-            )
-            break
         current_file_set = set(current_file_for_key.values())
         relevant_files_first = sorted(
             commit.modified_files,

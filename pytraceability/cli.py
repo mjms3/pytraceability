@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import functools
 import sys
-from datetime import datetime
 from pathlib import Path
 
 import click
@@ -42,10 +41,6 @@ def strip_kwargs(f):
 @click.option(
     "--git-history-mode",
     type=click.Choice([o.value for o in GitHistoryMode]),
-)
-@click.option(
-    "--since",
-    type=datetime.fromisoformat,
 )
 @click.option(
     "--pyproject-file",

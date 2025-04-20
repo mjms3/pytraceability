@@ -16,7 +16,7 @@ from pytraceability.data_definition import (
     MetaDataType,
     TraceabilityGitHistory,
 )
-from pytraceability.discovery import PyTraceabilityCollector
+from pytraceability.collector import PyTraceabilityCollector
 from pytraceability.exceptions import InvalidTraceabilityError
 from tests.examples import (
     function_with_traceability,

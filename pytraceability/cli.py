@@ -13,7 +13,7 @@ from pytraceability.config import (
     GitHistoryMode,
     OutputFormats,
 )
-from pytraceability.discovery import PyTraceabilityCollector
+from pytraceability.collector import PyTraceabilityCollector
 from pytraceability.logging import setup_logging
 
 

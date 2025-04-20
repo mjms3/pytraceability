@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from pytraceability.config import GitHistoryMode, PyTraceabilityConfig
 from pytraceability.data_definition import TraceabilityGitHistory
-from pytraceability.discovery import PyTraceabilityCollector
+from pytraceability.collector import PyTraceabilityCollector
 from tests.utils import M
 
 GIT_HISTORY_TESTS_DIR = Path(__file__).parent / "git_history_tests"

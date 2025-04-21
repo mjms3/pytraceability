@@ -1,0 +1,752 @@
+
+<table border="1" cellspacing="0" cellpadding="5">
+    <thead>
+        <tr>
+            <th>Traceability Key</th>
+            <th>Meta data</th>
+            <th>File Path</th>
+            <th>Function</th>
+            <th>Line Range</th>
+            <th>Contains Raw Code</th>
+            <th>Source Code</th>
+            <th>History (Commits)</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td>PYTRACEABILITY-1</td>
+            <td>{&#39;info&#39;: &#39;pytraceability searches a directory for traceability decorators&#39;}</td>
+            <td>pytraceability/collector.py</td>
+            <td>PyTraceabilityCollector._get_file_paths</td>
+            <td>38 to 44</td>
+            <td>No</td>
+            <td>
+
+                <pre>def _get_file_paths(self) -&gt; Generator[Path, None, None]:
+        _log.info(&#34;Using exclude patterns %s&#34;, self.config.exclude_patterns)
+        for file_path in self.config.base_directory.rglob(&#34;*.py&#34;):
+            if file_is_excluded(file_path, self.config.exclude_patterns):
+                _log.debug(&#34;Skipping %s&#34;, file_path)
+                continue
+            yield file_path</pre>
+
+            </td>
+            <td>
+                <ul>
+
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/350e2ab1127162489ff28110adf02e4927f2b84b">350e2ab1127162489ff28110adf02e4927f2b84b</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/ad39320691be3c59358e0a219d01a778c09d5f31">ad39320691be3c59358e0a219d01a778c09d5f31</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/8d3311566202ee73c08b84ecd557ef0f6b50d415">8d3311566202ee73c08b84ecd557ef0f6b50d415</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/9bf6d936f73a6d8e830f48ee8b5df0a0005bd9bb">9bf6d936f73a6d8e830f48ee8b5df0a0005bd9bb</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/4135ad267906b504a6c6f1657fff23e0fb8349e0">4135ad267906b504a6c6f1657fff23e0fb8349e0</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/654fa317d9deb11853d3a8e2b53c60c43c2a2a32">654fa317d9deb11853d3a8e2b53c60c43c2a2a32</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/42d5f277cbf07b39b666da62c0f4447c6f348ca2">42d5f277cbf07b39b666da62c0f4447c6f348ca2</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/aa62d85b39bf214edae431b32d96562132130494">aa62d85b39bf214edae431b32d96562132130494</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/6250fb6c3178553d4bbe9ddf1974bfeb33981fe3">6250fb6c3178553d4bbe9ddf1974bfeb33981fe3</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/d5cd31461320de8abe7475b0bf69f56b31af750f">d5cd31461320de8abe7475b0bf69f56b31af750f</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/ba8c8ef78b6526f381721e084c40bf1578ea2400">ba8c8ef78b6526f381721e084c40bf1578ea2400</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/11768a6e409c3d661b11f99126578bfc969c653a">11768a6e409c3d661b11f99126578bfc969c653a</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/ec604885d81e60934f80c1e093f76d5d3b71f8cb">ec604885d81e60934f80c1e093f76d5d3b71f8cb</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/518b25cb89ca72d0ed889788dcee9856fecd0645">518b25cb89ca72d0ed889788dcee9856fecd0645</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/951fe56a475d727f2d21208884ef7305fd879cf7">951fe56a475d727f2d21208884ef7305fd879cf7</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/c56bd3c71ac70b8f5e2f20ce14e447767abb2ddf">c56bd3c71ac70b8f5e2f20ce14e447767abb2ddf</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/991bcd8e6f33d87b71db0654c8c0706212541697">991bcd8e6f33d87b71db0654c8c0706212541697</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/b967380a3d1cc85aa3f21edc76d3a2e6f3f0b23c">b967380a3d1cc85aa3f21edc76d3a2e6f3f0b23c</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/f59b939971a153b499e3779b9cb8d3e44e6326ca">f59b939971a153b499e3779b9cb8d3e44e6326ca</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/8fe489b9786152c4d0ff9f053fe63bd327770176">8fe489b9786152c4d0ff9f053fe63bd327770176</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/cd6784711af8f5119fdde04e13fdc053325771e7">cd6784711af8f5119fdde04e13fdc053325771e7</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/d177a1a0617c8eb0e9a6d46a2959b5a243a6eeab">d177a1a0617c8eb0e9a6d46a2959b5a243a6eeab</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/78992eb05dc84034beb942f6bfa12c8cc06f32d1">78992eb05dc84034beb942f6bfa12c8cc06f32d1</a>
+
+                        </li>
+
+
+                </ul>
+            </td>
+        </tr>
+
+        <tr>
+            <td>PYTRACEABILITY-2</td>
+            <td>{&#39;info&#39;: &#39;pytraceability extracts traceability info from the decorators statically&#39;}</td>
+            <td>pytraceability/ast_processing.py</td>
+            <td>extract_traceability_from_file_using_ast</td>
+            <td>143 to 156</td>
+            <td>No</td>
+            <td>
+
+                <pre>def extract_traceability_from_file_using_ast(
+    file_path: Path, decorator_name: str
+) -&gt; list[TraceabilityReport]:
+    _log.info(&#34;Extracting traceability from file: %s&#34;, file_path)
+    with open(file_path, &#34;r&#34;) as f:
+        source_code = f.read()
+        try:
+            tree = ast.parse(source_code, filename=file_path)
+        except SyntaxError:
+            _log.warning(f&#34;Ignoring file due to syntax error: {file_path}&#34;)
+            return []
+        return TraceabilityVisitor(
+            decorator_name, file_path=file_path, source_code=source_code
+        ).visit(tree)</pre>
+
+            </td>
+            <td>
+                <ul>
+
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/ad39320691be3c59358e0a219d01a778c09d5f31">ad39320691be3c59358e0a219d01a778c09d5f31</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/9bf6d936f73a6d8e830f48ee8b5df0a0005bd9bb">9bf6d936f73a6d8e830f48ee8b5df0a0005bd9bb</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/4135ad267906b504a6c6f1657fff23e0fb8349e0">4135ad267906b504a6c6f1657fff23e0fb8349e0</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/dc874145c286c6e46711b7a0753722f526435525">dc874145c286c6e46711b7a0753722f526435525</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/d8b1e347253d4cfbd4cc91279b0caa5988ae7ad8">d8b1e347253d4cfbd4cc91279b0caa5988ae7ad8</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/1b68db32e5d90690cc0574b9f59be759a8128f95">1b68db32e5d90690cc0574b9f59be759a8128f95</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/aa62d85b39bf214edae431b32d96562132130494">aa62d85b39bf214edae431b32d96562132130494</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/6250fb6c3178553d4bbe9ddf1974bfeb33981fe3">6250fb6c3178553d4bbe9ddf1974bfeb33981fe3</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/d5cd31461320de8abe7475b0bf69f56b31af750f">d5cd31461320de8abe7475b0bf69f56b31af750f</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/ba8c8ef78b6526f381721e084c40bf1578ea2400">ba8c8ef78b6526f381721e084c40bf1578ea2400</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/11768a6e409c3d661b11f99126578bfc969c653a">11768a6e409c3d661b11f99126578bfc969c653a</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/c97f6efb26d2171cc1dd3b45cd5075ddf033640b">c97f6efb26d2171cc1dd3b45cd5075ddf033640b</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/e294d5d05655f0ec87a2c58c17f84104aa92aeb1">e294d5d05655f0ec87a2c58c17f84104aa92aeb1</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/951fe56a475d727f2d21208884ef7305fd879cf7">951fe56a475d727f2d21208884ef7305fd879cf7</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/c56bd3c71ac70b8f5e2f20ce14e447767abb2ddf">c56bd3c71ac70b8f5e2f20ce14e447767abb2ddf</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/991bcd8e6f33d87b71db0654c8c0706212541697">991bcd8e6f33d87b71db0654c8c0706212541697</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/6543a6be2c3038f6e3055859a7f1750ff7305272">6543a6be2c3038f6e3055859a7f1750ff7305272</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/f59b939971a153b499e3779b9cb8d3e44e6326ca">f59b939971a153b499e3779b9cb8d3e44e6326ca</a>
+
+                        </li>
+
+
+                </ul>
+            </td>
+        </tr>
+
+        <tr>
+            <td>PYTRACEABILITY-3</td>
+            <td>{&#39;info&#39;: &#34;If pytraceability can&#39;t extract data statically, it has the option to try to extract it dynamically by importing the module.&#34;}</td>
+            <td>pytraceability/collector.py</td>
+            <td>PyTraceabilityCollector.collect</td>
+            <td>51 to 100</td>
+            <td>No</td>
+            <td>
+
+                <pre>def collect(self) -&gt; list[TraceabilityReport]:
+        traceability_reports: dict[str, TraceabilityReport] = {}
+        for file_path in self._get_file_paths():
+            for report in extract_traceability_from_file_using_ast(
+                file_path, self.config.decorator_name
+            ):
+                traceability_reports[report.key] = report
+
+        incomplete_reports = [
+            t for t in traceability_reports.values() if t.contains_raw_source_code
+        ]
+        _log.info(
+            &#34;%s traceability decorators contain raw source code.&#34;,
+            len(incomplete_reports),
+        )
+        if (
+            self.config.mode == PyTraceabilityMode.MODULE_IMPORT
+            and len(incomplete_reports) &gt; 0
+        ):
+            if self.config.python_root is None:  # pragma: no cover
+                # Should never actually end up here, because the model_validator will
+                # default this to base_directory, but we can&#39;t set it as non-optional
+                # because it would break typing checking at model creation
+                raise ValueError(
+                    f&#34;Python root directory must be set in {PyTraceabilityMode.MODULE_IMPORT} mode&#34;
+                )
+            for file_path, traceabilities in groupby(
+                incomplete_reports, attrgetter(&#34;file_path&#34;)
+            ):
+                for (
+                    extracted_traceability
+                ) in extract_traceabilities_using_module_import(
+                    file_path, self.config.python_root, traceabilities
+                ):
+                    traceability_reports[
+                        extracted_traceability.key
+                    ].metadata = extracted_traceability.metadata
+
+        if self.config.git_history_mode == GitHistoryMode.FUNCTION_HISTORY:
+            _log.info(&#34;Collecting git history for traceability reports&#34;)
+            git_histories = get_line_based_history(
+                list(traceability_reports.values()), self.config
+            )
+            for traceability_key, git_history in git_histories.items():
+                traceability_reports[traceability_key].history = git_history
+        elif self.config.git_history_mode != GitHistoryMode.NONE:
+            raise ValueError(
+                f&#34;Unsupported git history mode: {self.config.git_history_mode}&#34;
+            )
+        return list(traceability_reports.values())</pre>
+
+            </td>
+            <td>
+                <ul>
+
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/350e2ab1127162489ff28110adf02e4927f2b84b">350e2ab1127162489ff28110adf02e4927f2b84b</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/ad39320691be3c59358e0a219d01a778c09d5f31">ad39320691be3c59358e0a219d01a778c09d5f31</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/8d3311566202ee73c08b84ecd557ef0f6b50d415">8d3311566202ee73c08b84ecd557ef0f6b50d415</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/9bf6d936f73a6d8e830f48ee8b5df0a0005bd9bb">9bf6d936f73a6d8e830f48ee8b5df0a0005bd9bb</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/4135ad267906b504a6c6f1657fff23e0fb8349e0">4135ad267906b504a6c6f1657fff23e0fb8349e0</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/654fa317d9deb11853d3a8e2b53c60c43c2a2a32">654fa317d9deb11853d3a8e2b53c60c43c2a2a32</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/42d5f277cbf07b39b666da62c0f4447c6f348ca2">42d5f277cbf07b39b666da62c0f4447c6f348ca2</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/aa62d85b39bf214edae431b32d96562132130494">aa62d85b39bf214edae431b32d96562132130494</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/6250fb6c3178553d4bbe9ddf1974bfeb33981fe3">6250fb6c3178553d4bbe9ddf1974bfeb33981fe3</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/d5cd31461320de8abe7475b0bf69f56b31af750f">d5cd31461320de8abe7475b0bf69f56b31af750f</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/ba8c8ef78b6526f381721e084c40bf1578ea2400">ba8c8ef78b6526f381721e084c40bf1578ea2400</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/11768a6e409c3d661b11f99126578bfc969c653a">11768a6e409c3d661b11f99126578bfc969c653a</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/ec604885d81e60934f80c1e093f76d5d3b71f8cb">ec604885d81e60934f80c1e093f76d5d3b71f8cb</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/518b25cb89ca72d0ed889788dcee9856fecd0645">518b25cb89ca72d0ed889788dcee9856fecd0645</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/951fe56a475d727f2d21208884ef7305fd879cf7">951fe56a475d727f2d21208884ef7305fd879cf7</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/c56bd3c71ac70b8f5e2f20ce14e447767abb2ddf">c56bd3c71ac70b8f5e2f20ce14e447767abb2ddf</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/991bcd8e6f33d87b71db0654c8c0706212541697">991bcd8e6f33d87b71db0654c8c0706212541697</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/b967380a3d1cc85aa3f21edc76d3a2e6f3f0b23c">b967380a3d1cc85aa3f21edc76d3a2e6f3f0b23c</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/f59b939971a153b499e3779b9cb8d3e44e6326ca">f59b939971a153b499e3779b9cb8d3e44e6326ca</a>
+
+                        </li>
+
+
+                </ul>
+            </td>
+        </tr>
+
+        <tr>
+            <td>PYTRACEABILITY-4</td>
+            <td>{&#39;info&#39;: &#34;If pytraceability can&#39;t extract the key either statically or dynamically, anInvalidTraceabilityError is raised. This might happen for a closure where the traceability key is stored in a variable.&#34;}</td>
+            <td>pytraceability/import_processing.py</td>
+            <td>extract_traceabilities_using_module_import</td>
+            <td>69 to 77</td>
+            <td>No</td>
+            <td>
+
+                <pre>def extract_traceabilities_using_module_import(
+    file_path: Path,
+    python_root: Path,
+    traceability_reports: Iterator[TraceabilityReport],
+) -&gt; Generator[Traceability, None, None]:
+    _log.info(&#34;Extracting traceability from %s using module import&#34;, file_path)
+    module = _load_python_module(file_path, python_root)
+    for traceability_report in traceability_reports:
+        yield from _extract_traceability(module, traceability_report.function_name)</pre>
+
+            </td>
+            <td>
+                <ul>
+
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/ad39320691be3c59358e0a219d01a778c09d5f31">ad39320691be3c59358e0a219d01a778c09d5f31</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/654fa317d9deb11853d3a8e2b53c60c43c2a2a32">654fa317d9deb11853d3a8e2b53c60c43c2a2a32</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/42d5f277cbf07b39b666da62c0f4447c6f348ca2">42d5f277cbf07b39b666da62c0f4447c6f348ca2</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/6250fb6c3178553d4bbe9ddf1974bfeb33981fe3">6250fb6c3178553d4bbe9ddf1974bfeb33981fe3</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/d5cd31461320de8abe7475b0bf69f56b31af750f">d5cd31461320de8abe7475b0bf69f56b31af750f</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/ba8c8ef78b6526f381721e084c40bf1578ea2400">ba8c8ef78b6526f381721e084c40bf1578ea2400</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/c97f6efb26d2171cc1dd3b45cd5075ddf033640b">c97f6efb26d2171cc1dd3b45cd5075ddf033640b</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/518b25cb89ca72d0ed889788dcee9856fecd0645">518b25cb89ca72d0ed889788dcee9856fecd0645</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/c56bd3c71ac70b8f5e2f20ce14e447767abb2ddf">c56bd3c71ac70b8f5e2f20ce14e447767abb2ddf</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/414bb49cf4027f4e6bbc704ada932c4d083a2ad3">414bb49cf4027f4e6bbc704ada932c4d083a2ad3</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/991bcd8e6f33d87b71db0654c8c0706212541697">991bcd8e6f33d87b71db0654c8c0706212541697</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/f59b939971a153b499e3779b9cb8d3e44e6326ca">f59b939971a153b499e3779b9cb8d3e44e6326ca</a>
+
+                        </li>
+
+
+                </ul>
+            </td>
+        </tr>
+
+        <tr>
+            <td>PYTRACEABILITY-5</td>
+            <td>{&#39;info&#39;: &#39;pytraceability can extract a history of the code decorated by a given key from git&#39;}</td>
+            <td>pytraceability/history.py</td>
+            <td>get_line_based_history</td>
+            <td>52 to 107</td>
+            <td>No</td>
+            <td>
+
+                <pre>def get_line_based_history(
+    traceability_reports: list[TraceabilityReport], config: PyTraceabilityConfig
+) -&gt; dict[str, list[TraceabilityGitHistory]]:
+    current_file_for_key = CurrentFileForKey.from_traceability_reports(
+        traceability_reports, config
+    )
+
+    history: dict[str, list[TraceabilityGitHistory]] = {}
+    repo_root = get_repo_root(config.base_directory)
+    for commit in Repository(
+        str(repo_root),
+        order=&#34;reverse&#34;,
+        only_in_branch=config.git_branch,
+    ).traverse_commits():
+        current_file_set = set(current_file_for_key.values())
+        relevant_files_first = sorted(
+            commit.modified_files,
+            key=lambda f: f.new_path in current_file_set,
+        )
+
+        current_file_for_key.reset_keys_for_relevant_files(relevant_files_first)
+        for modified_file in relevant_files_first:
+            if (
+                modified_file.source_code is None
+                or modified_file.new_path is None
+                or not modified_file.new_path.endswith(&#34;py&#34;)
+                or file_is_excluded(
+                    Path(modified_file.new_path), config.exclude_patterns
+                )
+            ):
+                continue
+            _log.debug(&#34;Processing file %s&#34;, modified_file.new_path)
+            tree = ast.parse(modified_file.source_code, filename=modified_file.new_path)
+            traceability_reports = TraceabilityVisitor(
+                config.decorator_name,
+                file_path=Path(modified_file.new_path),
+                source_code=modified_file.source_code,
+            ).visit(tree)
+            for traceability_report in traceability_reports:
+                if traceability_report.key not in history:
+                    history[traceability_report.key] = []
+                history[traceability_report.key].append(
+                    TraceabilityGitHistory(
+                        commit=commit.hash,
+                        author_name=commit.author.name,
+                        author_date=commit.author_date,
+                        message=commit.msg.strip(),
+                        source_code=traceability_report.source_code,
+                    )
+                )
+                current_file_for_key[traceability_report.key] = modified_file.new_path
+
+            if all(current_file_for_key.values()):
+                _log.info(&#34;All traceability decorators located for commit&#34;)
+                break
+    return history</pre>
+
+            </td>
+            <td>
+                <ul>
+
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/ad39320691be3c59358e0a219d01a778c09d5f31">ad39320691be3c59358e0a219d01a778c09d5f31</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/9bf6d936f73a6d8e830f48ee8b5df0a0005bd9bb">9bf6d936f73a6d8e830f48ee8b5df0a0005bd9bb</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/654fa317d9deb11853d3a8e2b53c60c43c2a2a32">654fa317d9deb11853d3a8e2b53c60c43c2a2a32</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/6250fb6c3178553d4bbe9ddf1974bfeb33981fe3">6250fb6c3178553d4bbe9ddf1974bfeb33981fe3</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/d5cd31461320de8abe7475b0bf69f56b31af750f">d5cd31461320de8abe7475b0bf69f56b31af750f</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/11768a6e409c3d661b11f99126578bfc969c653a">11768a6e409c3d661b11f99126578bfc969c653a</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/7c619ae9cd7cfdbb93a29ee77407bb502fce4786">7c619ae9cd7cfdbb93a29ee77407bb502fce4786</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/2a4243e01b675ddc4d5f90c429c1a0fe10b87fc3">2a4243e01b675ddc4d5f90c429c1a0fe10b87fc3</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/de0939717b5e0882d11e93800fea0436d26106e2">de0939717b5e0882d11e93800fea0436d26106e2</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/ec604885d81e60934f80c1e093f76d5d3b71f8cb">ec604885d81e60934f80c1e093f76d5d3b71f8cb</a>
+
+                        </li>
+
+                        <li>
+
+                                <a href="https://github.com/mjms3/pytraceability/commit/518b25cb89ca72d0ed889788dcee9856fecd0645">518b25cb89ca72d0ed889788dcee9856fecd0645</a>
+
+                        </li>
+
+
+                </ul>
+            </td>
+        </tr>
+
+    </tbody>
+</table>

@@ -9,7 +9,7 @@
 project = "pytraceability"
 copyright = "2025, Max Shepherd"
 author = "Max Shepherd"
-release = "0.0.3"
+release = "0.0.1a1"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

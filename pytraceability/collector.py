@@ -109,7 +109,7 @@ class PyTraceabilityCollector:
             yield TraceabilitySummary(reports=reports).model_dump_json(indent=2)
         elif self.config.output_format == OutputFormats.HTML:
             yield from render_traceability_summary_html(
-                TraceabilitySummary(reports=reports)
+                TraceabilitySummary(reports=reports), self.config.commit_url_template
             )
         else:
             raise ValueError(f"Unsupported output format: {self.config.output_format}")

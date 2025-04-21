@@ -4,8 +4,10 @@ from pytraceability.config import PyTraceabilityConfig, OutputFormats
 
 def test_html(directory_with_two_files):
     config = PyTraceabilityConfig(
-        base_directory=directory_with_two_files, output_format=OutputFormats.HTML
+        base_directory=directory_with_two_files,
+        output_format=OutputFormats.HTML,
     )
+
     html_report = []
     for segment in PyTraceabilityCollector(config).get_printable_output():
         html_report.extend(

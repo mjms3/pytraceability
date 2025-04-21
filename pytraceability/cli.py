@@ -58,6 +58,11 @@ def strip_kwargs(f):
     type=str,
 )
 @click.option(
+    "--commit-url-template",
+    type=str,
+    help="Template URL for commit links, e.g., 'http://github.com/projectname/{commit}'",
+)
+@click.option(
     "-v",
     "--verbose",
     "verbosity",

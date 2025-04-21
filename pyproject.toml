@@ -48,6 +48,7 @@ decorator_name = "pytraceability"
 exclude_patterns = ["*test*"]
 base_directory = "./pytraceability"
 mode = 'module-import'
+commit_url_template = 'https://github.com/mjms3/pytraceability/commit/{commit}'
 
 [build-system]
 requires = ["poetry-core>=1.7.1,<2.0.0"]

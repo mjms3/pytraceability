@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Generator
 from html import escape
 from jinja2 import Template
@@ -38,7 +39,13 @@ HTML_TEMPLATE = """
                 <ul>
                     {% if report.history %}
                         {% for commit in report.history %}
-                        <li>{{ commit.commit | escape }}</li>
+                        <li>
+                            {% if commit_url_template %}
+                                <a href="{{ commit_url_template.replace('{commit}', commit.commit) }}">{{ commit.commit | escape }}</a>
+                            {% else %}
+                                {{ commit.commit | escape }}
+                            {% endif %}
+                        </li>
                         {% endfor %}
                     {% else %}
                         <li>No history</li>
@@ -54,6 +61,7 @@ HTML_TEMPLATE = """
 
 def render_traceability_summary_html(
     summary: TraceabilitySummary,
+    commit_url_template: str | None,
 ) -> Generator[str, None, None]:
     template = Template(HTML_TEMPLATE)
     reports = [
@@ -70,6 +78,8 @@ def render_traceability_summary_html(
         for report in summary.reports
     ]
 
-    rendered_html = template.render(reports=reports, escape=escape)
+    rendered_html = template.render(
+        reports=reports, escape=escape, commit_url_template=commit_url_template
+    )
     for line in rendered_html.splitlines():
         yield line

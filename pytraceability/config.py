@@ -76,6 +76,7 @@ class PyTraceabilityConfig(BaseModel):
     mode: PyTraceabilityMode = PyTraceabilityMode.DEFAULT
     git_history_mode: GitHistoryMode = GitHistoryMode.NONE
     output_format: OutputFormats = OutputFormats.KEY_ONLY
+    git_branch: str = "main"
 
     @model_validator(mode="before")
     def validate_config(cls, values):

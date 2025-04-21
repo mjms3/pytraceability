@@ -7,7 +7,7 @@ from git import Repo
 
 @pytest.fixture
 def git_repo(tmp_path: Path) -> Repo:
-    return Repo.init(tmp_path)
+    return Repo.init(tmp_path, initial_branch="main")
 
 
 @pytest.fixture

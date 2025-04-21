@@ -54,6 +54,10 @@ def strip_kwargs(f):
     multiple=True,
 )
 @click.option(
+    "--git-branch",
+    type=str,
+)
+@click.option(
     "-v",
     "--verbose",
     "verbosity",

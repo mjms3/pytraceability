@@ -58,7 +58,11 @@ def get_line_based_history(
 
     history: dict[str, list[TraceabilityGitHistory]] = {}
     repo_root = get_repo_root(config.base_directory)
-    for commit in Repository(str(repo_root), order="reverse").traverse_commits():
+    for commit in Repository(
+        str(repo_root),
+        order="reverse",
+        only_in_branch=config.git_branch,
+    ).traverse_commits():
         current_file_set = set(current_file_for_key.values())
         relevant_files_first = sorted(
             commit.modified_files,

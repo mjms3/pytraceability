@@ -36,9 +36,15 @@ def test_html(directory_with_two_files):
                    <td>foo</td>
                    <td>2 to 3</td>
                    <td>No</td>
-                   <td><pre>def foo():
-       pass</pre></td>
-                   <td><ul><li>No history</li></ul></td>
+                   <td>
+                   <pre>def foo():
+                        pass</pre>
+                    </td>
+                   <td>
+                   <ul>
+                   <li>No history</li>
+                   </ul>
+                   </td>
                </tr>
                <tr>
                    <td>KEY-2</td>
@@ -47,9 +53,16 @@ def test_html(directory_with_two_files):
                    <td>foo</td>
                    <td>2 to 3</td>
                    <td>No</td>
-                   <td><pre>def foo():
-       pass</pre></td>
-                   <td><ul><li>No history</li></ul></td>
+                   <td>
+                   <pre>def foo():
+                        pass</pre>
+                    </td>
+                   <td>
+                   <ul>
+                   <li>No history</li>
+                   </ul>
+                   </td>
                </tr>
-   </tbody></table>""".splitlines()
+   </tbody>
+   </table>""".splitlines()
     ]

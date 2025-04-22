@@ -1,5 +1,5 @@
 import logging
-import click
+
 from colorama import Fore, Style
 
 
@@ -39,19 +39,6 @@ def setup_logging(verbosity: int):
         level = logging.DEBUG
 
     formatter = ColorFormatter("%(levelname)s:%(name)s: %(message)s")
-    handler = ClickEchoHandler()
+    handler = logging.StreamHandler()
     handler.setFormatter(formatter)
     logging.basicConfig(level=level, handlers=[handler])
-
-
-class ClickEchoHandler(logging.Handler):
-    """
-    A logging handler that uses click.echo to output log messages.
-    """
-
-    def emit(self, record):
-        try:
-            msg = self.format(record)
-            click.echo(msg)
-        except Exception:
-            self.handleError(record)

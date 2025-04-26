@@ -13,7 +13,7 @@ from pytraceability.config import (
     OutputFormats,
 )
 from pytraceability.collector import PyTraceabilityCollector
-from pytraceability.logging import setup_logging
+from pytraceability.logging import setup_logging, get_display_logger
 
 
 def strip_kwargs(f):
@@ -74,11 +74,11 @@ def strip_kwargs(f):
 @strip_kwargs
 def main(ctx):
     setup_logging(ctx.params["verbosity"])
+    _log = get_display_logger(__name__)
     config = PyTraceabilityConfig.from_command_line_arguments(ctx.params)
 
-    if click.get_text_stream("stdout").isatty():
-        click.echo(f"Extracting traceability from {config.base_directory}")
-        click.echo(f"Using python root: {config.python_root}")
+    _log.display(f"Extracting traceability from {config.base_directory}")
+    _log.display(f"Using python root: {config.python_root}")
 
     for output_line in PyTraceabilityCollector(config).get_printable_output():
         click.echo(output_line)

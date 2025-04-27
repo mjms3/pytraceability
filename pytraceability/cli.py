@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import functools
 import sys
-from pathlib import Path
 
 import click
+import cloup
+from cloup.constraints import If, Equal, accept_none
 
 from pytraceability.config import (
     PyTraceabilityConfig,
@@ -26,41 +27,58 @@ def strip_kwargs(f):
     return wrapper
 
 
-@click.command()
-@click.option("--base-directory", type=Path, default=None)
-@click.option("--decorator-name", type=str)
-@click.option(
-    "--output-format",
-    type=click.Choice([o.value for o in OutputFormats]),
+@cloup.command()
+@cloup.option_group(
+    "Core options",
+    cloup.option(
+        "--pyproject-file",
+        type=cloup.file_path(exists=True, readable=True, resolve_path=True),
+        help="Path to a pyproject.toml file to load configuration from.",
+    ),
+    cloup.option(
+        "--base-directory",
+        type=cloup.dir_path(exists=True, readable=True, resolve_path=True),
+        default=None,
+    ),
+    cloup.option("--decorator-name", type=str),
+    cloup.option(
+        "--output-format",
+        type=click.Choice([o.value for o in OutputFormats]),
+    ),
+    cloup.option(
+        "--mode",
+        type=click.Choice([o.value for o in PyTraceabilityMode]),
+    ),
+    cloup.option(
+        "--exclude-pattern",
+        "exclude_patterns",
+        type=str,
+        multiple=True,
+    ),
+    cloup.option(
+        "--git-history-mode",
+        type=click.Choice([o.value for o in GitHistoryMode]),
+    ),
 )
-@click.option(
-    "--mode",
-    type=click.Choice([o.value for o in PyTraceabilityMode]),
-)
-@click.option("--python-root", type=Path, default=None)
-@click.option(
-    "--git-history-mode",
-    type=click.Choice([o.value for o in GitHistoryMode]),
-)
-@click.option(
-    "--pyproject-file",
-    type=Path,
-    help="Path to a pyproject.toml file to load configuration from.",
-)
-@click.option(
-    "--exclude-pattern",
-    "exclude_patterns",
-    type=str,
-    multiple=True,
-)
-@click.option(
-    "--git-branch",
-    type=str,
-)
-@click.option(
-    "--commit-url-template",
-    type=str,
-    help="Template URL for commit links, e.g., 'http://github.com/projectname/{commit}'",
+@cloup.option_group(
+    f"{GitHistoryMode.FUNCTION_HISTORY} options",
+    cloup.option(
+        "--python-root",
+        type=cloup.dir_path(exists=True, readable=True, resolve_path=True),
+        default=None,
+    ),
+    cloup.option(
+        "--git-branch",
+        type=str,
+    ),
+    cloup.option(
+        "--commit-url-template",
+        type=str,
+        help="Template URL for commit links, e.g., 'http://github.com/projectname/{commit}'",
+    ),
+    constraint=If(
+        ~Equal("git_history_mode", GitHistoryMode.FUNCTION_HISTORY), then=accept_none
+    ),
 )
 @click.option(
     "-v",

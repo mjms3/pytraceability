@@ -187,6 +187,22 @@ files = [
 colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
+name = "cloup"
+version = "3.0.5"
+description = "Adds features to Click: option groups, constraints, subcommand sections and help themes."
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "cloup-3.0.5-py2.py3-none-any.whl", hash = "sha256:bf122036066584eb0db113561167c29969cc015972b7b7ee03158d9bc7de87f8"},
+    {file = "cloup-3.0.5.tar.gz", hash = "sha256:c92b261c7bb7e13004930f3fb4b3edad8de2d1f12994dcddbe05bc21990443c5"},
+]
+
+[package.dependencies]
+click = ">=8.0,<9.0"
+typing-extensions = {version = "*", markers = "python_version <= \"3.8\""}
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
@@ -1323,4 +1339,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.8,<4.0"
-content-hash = "f6e60f06dcc73870f771432ee698484dec69dcf9b14a14b3858896f19547ed2a"
+content-hash = "7ee08cad3a4a7c98f54b958c7beb49e29d29353f7380486dc49513f181234aad"

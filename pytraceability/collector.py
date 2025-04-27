@@ -20,6 +20,10 @@ from pytraceability.data_definition import (
     TraceabilityReport,
     TraceabilitySummary,
 )
+from pytraceability.exceptions import (
+    InvalidTraceabilityError,
+    TraceabilityErrorMessages,
+)
 from pytraceability.history import get_line_based_history
 from pytraceability.html import render_traceability_summary_html
 from pytraceability.import_processing import extract_traceabilities_using_module_import
@@ -54,6 +58,11 @@ class PyTraceabilityCollector:
             for report in extract_traceability_from_file_using_ast(
                 file_path, self.config.decorator_name
             ):
+                if report.key in traceability_reports:
+                    raise InvalidTraceabilityError.from_allowed_message_types(
+                        TraceabilityErrorMessages.KEY_MUST_BE_UNIQUE,
+                        f"{report.key} is duplicated",
+                    )
                 traceability_reports[report.key] = report
 
         incomplete_reports = [

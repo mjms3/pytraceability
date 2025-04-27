@@ -16,6 +16,10 @@ from pytraceability.data_definition import (
     TraceabilityGitHistory,
     TraceabilityReport,
 )
+from pytraceability.exceptions import (
+    InvalidTraceabilityError,
+    TraceabilityErrorMessages,
+)
 
 _log = logging.getLogger(__name__)
 
@@ -30,9 +34,12 @@ class CurrentFileForKey(Dict[str, Optional[str]]):
         current_file_for_key = cls()
 
         for traceability_report in traceability_reports:
-            if traceability_report.key in current_file_for_key:
-                # TODO: Add a test for when the key is duplicated / enforce this more widely
-                raise ValueError(f"Key {traceability_report.key} is duplicated")
+            if traceability_report.key in current_file_for_key:  # pragma: no cover
+                # Should never hit this as this is checked in the collector
+                raise InvalidTraceabilityError.from_allowed_message_types(
+                    TraceabilityErrorMessages.KEY_MUST_BE_UNIQUE,
+                    f"Key {traceability_report.key} is duplicated",
+                )
             current_file_for_key[traceability_report.key] = str(
                 traceability_report.file_path.relative_to(config.base_directory)
             )

@@ -8,6 +8,7 @@ from pytraceability.config import PROJECT_NAME
 
 
 class TraceabilityErrorMessages(Enum):
+    KEY_MUST_BE_UNIQUE = "Key must be unique"
     KEY_MUST_BE_ARG = "Expected the key to be provided as an arg"
     ONLY_ONE_ARG = "Traceability decorator must have only one arg"
     KEY_CAN_NOT_BE_DYNAMIC = (
@@ -20,6 +21,10 @@ class TraceabilityErrorMessages(Enum):
 
 
 additional_error_info = {
+    TraceabilityErrorMessages.KEY_MUST_BE_UNIQUE: dedent("""\
+    The key for the traceability decorator must be unique.
+    This is to allow the repository mining to extract historic traceability data to work.
+    """),
     TraceabilityErrorMessages.KEY_MUST_BE_ARG: dedent("""\
     They key for the traceability decorator must be provided as an arg.
     This error should have been caught by type checks / run time errors before we ever

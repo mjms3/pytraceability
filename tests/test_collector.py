@@ -5,6 +5,7 @@ from operator import attrgetter
 from pathlib import Path
 
 import pytest
+from git import Repo
 
 from pytraceability.config import (
     PyTraceabilityMode,
@@ -18,6 +19,7 @@ from pytraceability.data_definition import (
 )
 from pytraceability.collector import PyTraceabilityCollector
 from pytraceability.exceptions import InvalidTraceabilityError
+from tests.conftest import write_traceability_file
 from tests.examples import (
     function_with_traceability,
 )
@@ -154,6 +156,21 @@ def test_collect_from_directory(directory_with_two_files):
         ),
     ]
     assert actual == expected
+
+
+@pytest.fixture
+def directory_with_duplicate_keys(
+    git_repo: Repo, tmp_path: Path, pyproject_file: Path
+) -> Path:
+    write_traceability_file(tmp_path / "file1.py", 1)
+    write_traceability_file(tmp_path / "file2.py", 1)
+    return tmp_path
+
+
+def test_duplicate_keys_raises_error(directory_with_duplicate_keys):
+    with pytest.raises(InvalidTraceabilityError):
+        config = PyTraceabilityConfig(base_directory=directory_with_duplicate_keys)
+        list(PyTraceabilityCollector(config).collect())
 
 
 def test_filename_exclusion():

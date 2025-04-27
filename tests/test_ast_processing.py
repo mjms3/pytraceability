@@ -123,9 +123,40 @@ def test_can_statically_extract_stacked_traceability_decorators():
     ]
 
 
-def test_key_must_be_specified():
+def test_key_can_be_a_kwarg():
     source_code = dedent("""\
-    @traceability()
+    @traceability(key="KEY")
+    def foo():
+        pass
+    """)
+    tree = ast.parse(source_code)
+    decorators = TraceabilityVisitor(
+        STANDARD_DECORATOR_NAME, _FILE_PATH, source_code
+    ).visit(tree)
+    assert decorators == [
+        TraceabilityReport(
+            file_path=_FILE_PATH,
+            function_name="foo",
+            line_number=2,
+            end_line_number=3,
+            source_code=_fn_def,
+            key="KEY",
+            metadata={},
+        )
+    ]
+
+
+@pytest.mark.parametrize(
+    "decorator_definition",
+    [
+        "@traceability()",
+        "@traceability('key1','key2')",
+        "@traceability('key1',key='key1')",
+    ],
+)
+def test_invalid_decorators(decorator_definition):
+    source_code = dedent(f"""\
+    {decorator_definition}
     def foo():
         pass
     """)
@@ -157,16 +188,3 @@ def test_other_decorators_are_ignored(decorator):
         )
         == []
     )
-
-
-def test_cannot_have_two_args():
-    source_code = dedent("""\
-    @traceability('key1','key2')
-    def foo():
-        pass
-    """)
-    tree = ast.parse(source_code)
-    with pytest.raises(InvalidTraceabilityError):
-        TraceabilityVisitor(STANDARD_DECORATOR_NAME, _FILE_PATH, source_code).visit(
-            tree
-        )

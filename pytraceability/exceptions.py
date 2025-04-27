@@ -4,16 +4,16 @@ from enum import Enum
 from textwrap import dedent
 from typing_extensions import Self
 
-from pytraceability.config import PROJECT_NAME
-
 
 class TraceabilityErrorMessages(Enum):
     KEY_MUST_BE_UNIQUE = "Key must be unique"
-    KEY_MUST_BE_ARG = "Expected the key to be provided as an arg"
     ONLY_ONE_ARG = "Traceability decorator must have only one arg"
-    KEY_CAN_NOT_BE_DYNAMIC = (
-        f"{PROJECT_NAME} must be able to work out a key for every decorator."
+
+    KEY_CAN_ONLY_BE_SPECIFIED_ONCE = (
+        "Key can only be specified once in a single decorator."
     )
+    KEY_MUST_BE_SPECIFIED = "Key must be specified"
+    KEY_MUST_BE_A_STRING = "Key must be a string"
 
     @classmethod
     def allowed_values(cls) -> tuple[str, ...]:
@@ -25,19 +25,21 @@ additional_error_info = {
     The key for the traceability decorator must be unique.
     This is to allow the repository mining to extract historic traceability data to work.
     """),
-    TraceabilityErrorMessages.KEY_MUST_BE_ARG: dedent("""\
-    They key for the traceability decorator must be provided as an arg.
-    This error should have been caught by type checks / run time errors before we ever
-    get to here, but it is conceivable a custom decorator could bypass this expectation.
-    """),
     TraceabilityErrorMessages.ONLY_ONE_ARG: dedent("""\
     The traceability decorator must have only one arg (the key).
-    If you're using a custom traceability decorator, the __init__ should have signature:
+    If you're using a custom traceability decorator, a possible signature for the
+     __init__ could be signature:
     def __init__(self, key, *, arg1: str, arg2: str, ...):
     """),
-    TraceabilityErrorMessages.KEY_CAN_NOT_BE_DYNAMIC: dedent(f"""\
-    {PROJECT_NAME} requires the key to be dynamic. This is required for the repository mining to extract traceability data
-    to work.
+    TraceabilityErrorMessages.KEY_CAN_ONLY_BE_SPECIFIED_ONCE: dedent("""\
+    The key for the traceability decorator can only be specified once that is,
+    either as an arg or as a kwarg."""),
+    TraceabilityErrorMessages.KEY_MUST_BE_SPECIFIED: dedent("""\
+    The key for the traceability decorator must be specified, either as an arg or as a kwarg
+    named 'key'.
+    """),
+    TraceabilityErrorMessages.KEY_MUST_BE_A_STRING: dedent("""\
+    The key for the traceability decorator must be a string (and set statically).
     """),
 }
 

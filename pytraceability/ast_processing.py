@@ -73,27 +73,39 @@ class TraceabilityVisitor(ast.NodeVisitor):
             return self.safe_eval(node, globals_)
 
     def _extract_traceability_from_decorator(self, decorator: ast.Call) -> Traceability:
-        kwargs = {}
-
-        if not decorator.args:
-            raise InvalidTraceabilityError.from_allowed_message_types(
-                TraceabilityErrorMessages.KEY_MUST_BE_ARG
-            )
-        if len(decorator.args) != 1:
+        num_args = len(decorator.args)
+        if num_args > 1:
             raise InvalidTraceabilityError.from_allowed_message_types(
                 TraceabilityErrorMessages.ONLY_ONE_ARG,
-                f"Decorator has {len(decorator.args)} args",
-            )
-        if isinstance(decorator.args[0], ast.Constant):
-            key = decorator.args[0].value
-        else:
-            raise InvalidTraceabilityError.from_allowed_message_types(
-                TraceabilityErrorMessages.KEY_CAN_NOT_BE_DYNAMIC
+                f"Decorator has {num_args} args",
             )
 
+        kwargs = {}
         for keyword in decorator.keywords:
             kwargs[keyword.arg] = self.walk_arg_definition(
                 keyword.value, globals_=globals_
+            )
+
+        key_from_arg = (
+            decorator.args[0].value
+            if num_args == 1 and isinstance(decorator.args[0], ast.Constant)
+            else None
+        )
+        key_from_kwarg = kwargs.pop("key", None)
+        if key_from_arg and key_from_kwarg:
+            raise InvalidTraceabilityError.from_allowed_message_types(
+                TraceabilityErrorMessages.KEY_CAN_ONLY_BE_SPECIFIED_ONCE,
+                f"Key is specified as both arg and kwarg: {key_from_arg} and {key_from_kwarg}",
+            )
+        if key_from_arg is None and key_from_kwarg is None:
+            raise InvalidTraceabilityError.from_allowed_message_types(
+                TraceabilityErrorMessages.KEY_MUST_BE_SPECIFIED
+            )
+        key = key_from_arg or key_from_kwarg
+
+        if not isinstance(key, str):
+            raise InvalidTraceabilityError.from_allowed_message_types(
+                TraceabilityErrorMessages.KEY_MUST_BE_A_STRING,
             )
 
         _log.info(

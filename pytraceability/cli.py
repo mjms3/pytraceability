@@ -11,6 +11,7 @@ from pytraceability.config import (
     PyTraceabilityConfig,
     PyTraceabilityMode,
     OutputFormats,
+    HistoryModeConfig,
 )
 from pytraceability.collector import PyTraceabilityCollector
 from pytraceability.logging import setup_logging, get_display_logger
@@ -37,21 +38,25 @@ def strip_kwargs(f):
     cloup.option(
         "--base-directory",
         type=cloup.dir_path(exists=True, readable=True, resolve_path=True),
-        default=None,
     ),
     cloup.option(
         "--python-root",
         type=cloup.dir_path(exists=True, readable=True, resolve_path=True),
-        default=None,
     ),
-    cloup.option("--decorator-name", type=str),
+    cloup.option(
+        "--decorator-name",
+        type=str,
+        help=f"Default value: {PyTraceabilityConfig.model_fields['decorator_name'].default}",
+    ),
     cloup.option(
         "--output-format",
         type=click.Choice([o.value for o in OutputFormats]),
+        help=f"Default value: {PyTraceabilityConfig.model_fields['output_format'].default}",
     ),
     cloup.option(
         "--mode",
         type=click.Choice([o.value for o in PyTraceabilityMode]),
+        help=f"Default value: {PyTraceabilityConfig.model_fields['mode'].default}",
     ),
     cloup.option(
         "--exclude-pattern",
@@ -69,6 +74,7 @@ def strip_kwargs(f):
     cloup.option(
         "--git-branch",
         type=str,
+        help=f"Default value: {HistoryModeConfig.model_fields['git_branch'].default}",
     ),
     cloup.option(
         "--commit-url-template",

@@ -118,5 +118,5 @@ class PyTraceabilityCollector:
                 if self.config.history_config
                 else None,
             )
-        else:
+        else:  # pragma: no cover
             raise ValueError(f"Unsupported output format: {self.config.output_format}")

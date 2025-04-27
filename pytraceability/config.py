@@ -28,18 +28,14 @@ class OutputFormats(str, Enum):
     HTML = "html"
 
 
-def _load_config_from_pyproject_file(pyproject_file: Path) -> dict[str, Any]:
+def load_config_from_pyproject_file(pyproject_file: Path) -> dict[str, Any]:
     return tomli.loads(pyproject_file.read_text())["tool"][PROJECT_NAME]
 
 
-def get_config_from_pyproject_file(
-    pyproject_file: Path | None,
+def find_pyproject_file(
     base_directory: Path,
     python_root: Path | None,
-) -> dict[str, Any]:
-    if pyproject_file is not None:
-        return _load_config_from_pyproject_file(pyproject_file)
-
+) -> Path | None:
     pyproject_file_sources: list[Path | None] = [
         base_directory,
         python_root,
@@ -55,9 +51,9 @@ def get_config_from_pyproject_file(
             pyproject_file_path = pyproject_file_path / "pyproject.toml"
             if pyproject_file_path.exists():
                 _log.info(f"Loading config from pyproject file {pyproject_file_path}")
-                return _load_config_from_pyproject_file(pyproject_file_path)
+                return pyproject_file_path
 
-    return {}
+    return None
 
 
 class HistoryModeConfig(BaseModel):
@@ -97,13 +93,16 @@ class PyTraceabilityConfig(BaseModel):
                 for k, v in cli_params.items()
                 if k in HistoryModeConfig.model_fields and v is not None
             }
-        config_from_file = get_config_from_pyproject_file(
-            Path(cli_params["pyproject_file"])
-            if cli_params.get("pyproject_file")
-            else None,
+        if pyproject_file := cli_params.get("pyproject_file"):
+            config_from_file = load_config_from_pyproject_file(Path(pyproject_file))
+        elif pyproject_file := find_pyproject_file(
             cli_params["base_directory"],
             cli_params.get("python_root"),
-        )
+        ):
+            config_from_file = load_config_from_pyproject_file(Path(pyproject_file))
+        else:
+            config_from_file = {}
+
         config = ChainMap(
             {k: v for k, v in cli_params.items() if v},
             config_from_file,

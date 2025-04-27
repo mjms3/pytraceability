@@ -16,7 +16,8 @@ from pytraceability.config import (
 from tests.utils import M
 
 
-def test_explicit_pyproject_file(tmp_path: Path):
+@pytest.fixture
+def pyproject_file(tmp_path: Path) -> Path:
     pyproject_file = tmp_path / "pyproject.toml"
     pyproject_file.write_text(
         dedent(
@@ -34,14 +35,15 @@ def test_explicit_pyproject_file(tmp_path: Path):
             """
         )
     )
+    return pyproject_file
 
+
+def test_explicit_pyproject_file(pyproject_file: Path, tmp_path: Path):
     config = PyTraceabilityConfig.from_command_line_arguments(
         {
             "pyproject_file": pyproject_file,
-            "base_directory": tmp_path,
         }
     )
-
     assert config == M(
         PyTraceabilityConfig,
         base_directory=tmp_path,
@@ -54,6 +56,28 @@ def test_explicit_pyproject_file(tmp_path: Path):
             git_branch="trunk",
         ),
     )
+
+
+def test_cli_no_history_overrides_pyproject(pyproject_file: Path, tmp_path: Path):
+    config = PyTraceabilityConfig.from_command_line_arguments(
+        {
+            "pyproject_file": pyproject_file,
+            "history": False,
+        }
+    )
+    assert config.history_config is None
+
+
+def test_cli_history_params_override_pyproject(pyproject_file: Path, tmp_path: Path):
+    config = PyTraceabilityConfig.from_command_line_arguments(
+        {
+            "pyproject_file": pyproject_file,
+            "history": True,
+            "git_branch": "branch1",
+        }
+    )
+    assert config.history_config is not None
+    assert config.history_config.git_branch == "branch1"
 
 
 @pytest.fixture

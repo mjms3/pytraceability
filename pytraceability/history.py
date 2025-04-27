@@ -59,7 +59,7 @@ class CurrentFileForKey(Dict[str, Optional[str]]):
 def get_line_based_history(
     traceability_reports: list[TraceabilityReport], config: PyTraceabilityConfig
 ) -> dict[str, list[TraceabilityGitHistory]]:
-    if config.history_config is None:
+    if config.history_config is None:  # pragma: no cover
         raise ValueError("History mode is not enabled in the config")
     current_file_for_key = CurrentFileForKey.from_traceability_reports(
         traceability_reports, config

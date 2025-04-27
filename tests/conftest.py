@@ -37,7 +37,10 @@ def directory_with_two_files(
     git_repo: Repo, tmp_path: Path, pyproject_file: Path
 ) -> Path:
     for idx in range(1, 3):
-        write_traceability_file(tmp_path / f"file{idx}.py", idx)
+        file_path = tmp_path / f"file{idx}.py"
+        write_traceability_file(file_path, idx)
+        git_repo.index.add([str(file_path)])
+    git_repo.index.commit("initial commit")
     return tmp_path
 
 

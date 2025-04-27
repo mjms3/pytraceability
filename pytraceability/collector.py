@@ -12,7 +12,6 @@ from pytraceability.config import (
     PyTraceabilityMode,
     PyTraceabilityConfig,
     PROJECT_NAME,
-    GitHistoryMode,
     OutputFormats,
 )
 from pytraceability.custom import pytraceability
@@ -95,17 +94,13 @@ class PyTraceabilityCollector:
                         extracted_traceability.key
                     ].metadata = extracted_traceability.metadata
 
-        if self.config.git_history_mode == GitHistoryMode.FUNCTION_HISTORY:
+        if self.config.history_config:
             _log.info("Collecting git history for traceability reports")
             git_histories = get_line_based_history(
                 list(traceability_reports.values()), self.config
             )
             for traceability_key, git_history in git_histories.items():
                 traceability_reports[traceability_key].history = git_history
-        elif self.config.git_history_mode != GitHistoryMode.NONE:
-            raise ValueError(
-                f"Unsupported git history mode: {self.config.git_history_mode}"
-            )
         return list(traceability_reports.values())
 
     def get_printable_output(self) -> Generator[str, None, None]:
@@ -118,7 +113,10 @@ class PyTraceabilityCollector:
             yield TraceabilitySummary(reports=reports).model_dump_json(indent=2)
         elif self.config.output_format == OutputFormats.HTML:
             yield from render_traceability_summary_html(
-                TraceabilitySummary(reports=reports), self.config.commit_url_template
+                TraceabilitySummary(reports=reports),
+                self.config.history_config.commit_url_template
+                if self.config.history_config
+                else None,
             )
         else:
             raise ValueError(f"Unsupported output format: {self.config.output_format}")

@@ -1,11 +1,16 @@
+from pathlib import Path
+
+from git import Repo
+
 from pytraceability.collector import PyTraceabilityCollector
-from pytraceability.config import PyTraceabilityConfig, OutputFormats
+from pytraceability.config import PyTraceabilityConfig, OutputFormats, HistoryModeConfig
 
 
-def test_html(directory_with_two_files):
+def test_html(directory_with_two_files: Path, git_repo: Repo):
     config = PyTraceabilityConfig(
         base_directory=directory_with_two_files,
         output_format=OutputFormats.HTML,
+        history_config=HistoryModeConfig(),
     )
 
     html_report = []
@@ -14,6 +19,7 @@ def test_html(directory_with_two_files):
             [line.strip() for line in segment.splitlines() if line.strip()]
         )
 
+    initial_commit = git_repo.head.commit
     assert html_report == [
         line.strip()
         for line in f"""\
@@ -44,7 +50,9 @@ def test_html(directory_with_two_files):
                     </td>
                    <td>
                    <ul>
-                   <li>No history</li>
+                   <li>
+                   {initial_commit}
+                   </li>
                    </ul>
                    </td>
                </tr>
@@ -61,7 +69,9 @@ def test_html(directory_with_two_files):
                     </td>
                    <td>
                    <ul>
-                   <li>No history</li>
+                   <li>
+                   {initial_commit}
+                   </li>
                    </ul>
                    </td>
                </tr>

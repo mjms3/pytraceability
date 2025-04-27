@@ -10,8 +10,8 @@ from pytraceability.config import (
     PROJECT_NAME,
     PyTraceabilityConfig,
     OutputFormats,
-    GitHistoryMode,
     PyTraceabilityMode,
+    HistoryModeConfig,
 )
 from tests.utils import M
 
@@ -27,8 +27,10 @@ def test_explicit_pyproject_file(tmp_path: Path):
             decorator_name = "custom_decorator"
             exclude_patterns = ["*test*"]
             mode = "module-import"
-            git_history_mode = "none"
             output_format = "json"
+
+            [tool.{PROJECT_NAME}.history]
+            git_branch = "trunk"
             """
         )
     )
@@ -47,8 +49,10 @@ def test_explicit_pyproject_file(tmp_path: Path):
         decorator_name="custom_decorator",
         exclude_patterns=["*test*"],
         mode=PyTraceabilityMode.MODULE_IMPORT,
-        git_history_mode=GitHistoryMode.NONE,
         output_format=OutputFormats.JSON,
+        history_config=HistoryModeConfig(
+            git_branch="trunk",
+        ),
     )
 
 

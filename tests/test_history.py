@@ -7,7 +7,7 @@ import pytest
 from git import Repo
 from pydantic import BaseModel
 
-from pytraceability.config import GitHistoryMode, PyTraceabilityConfig
+from pytraceability.config import PyTraceabilityConfig, HistoryModeConfig
 from pytraceability.data_definition import TraceabilityGitHistory
 from pytraceability.collector import PyTraceabilityCollector
 from tests.utils import M
@@ -24,7 +24,7 @@ DECORATOR_MOVED_TO_ANOTHER_FILE = "decorator moved to another file"
 def config(tmp_path: Path) -> PyTraceabilityConfig:
     return PyTraceabilityConfig(
         base_directory=tmp_path,
-        git_history_mode=GitHistoryMode.FUNCTION_HISTORY,
+        history_config=HistoryModeConfig(),
     )
 
 

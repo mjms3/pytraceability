@@ -4,7 +4,7 @@ import logging
 from collections import ChainMap
 from typing import Any
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, computed_field
 from enum import Enum
 from pathlib import Path
 
@@ -22,11 +22,6 @@ class PyTraceabilityMode(str, Enum):
     MODULE_IMPORT = "module-import"
 
 
-class GitHistoryMode(str, Enum):
-    NONE = "none"
-    FUNCTION_HISTORY = "function-history"
-
-
 class OutputFormats(str, Enum):
     KEY_ONLY = "key-only"
     JSON = "json"
@@ -42,9 +37,8 @@ def get_config_from_pyproject_file(
     base_directory: Path,
     python_root: Path | None,
 ) -> dict[str, Any]:
-    supplied_pyproject_file = pyproject_file
-    if supplied_pyproject_file is not None:
-        return _load_config_from_pyproject_file(supplied_pyproject_file)
+    if pyproject_file is not None:
+        return _load_config_from_pyproject_file(pyproject_file)
 
     pyproject_file_sources: list[Path | None] = [
         base_directory,
@@ -66,30 +60,43 @@ def get_config_from_pyproject_file(
     return {}
 
 
-class PyTraceabilityConfig(BaseModel):
-    base_directory: Path
-    python_root: Path | None = (
-        None  # Optional, will be set to base_directory if not provided
-    )
-    decorator_name: str = STANDARD_DECORATOR_NAME
-    exclude_patterns: list[str] = Field(default_factory=list)
-    mode: PyTraceabilityMode = PyTraceabilityMode.DEFAULT
-    git_history_mode: GitHistoryMode = GitHistoryMode.NONE
-    output_format: OutputFormats = OutputFormats.KEY_ONLY
+class HistoryModeConfig(BaseModel):
     git_branch: str = "main"
     commit_url_template: str | None = None
 
-    @model_validator(mode="before")
-    def validate_config(cls, values):
-        if values.get("python_root") is None:
-            values["python_root"] = values.get("base_directory")
-        return values
+
+class PyTraceabilityConfig(BaseModel):
+    base_directory: Path
+    _python_root: Path | None = None
+    decorator_name: str = STANDARD_DECORATOR_NAME
+    exclude_patterns: list[str] = Field(default_factory=list)
+    mode: PyTraceabilityMode = PyTraceabilityMode.DEFAULT
+    output_format: OutputFormats = OutputFormats.KEY_ONLY
+    history_config: HistoryModeConfig | None = None
+
+    def __init__(self, /, **data: Any) -> None:
+        python_root = data.pop("python_root", None)
+        super().__init__(**data)
+        self._python_root = Path(python_root) if python_root else None
+
+    @computed_field
+    @property
+    def python_root(self) -> Path:
+        if self._python_root:
+            return self._python_root
+        return self.base_directory
 
     @classmethod
     def from_command_line_arguments(
         cls, cli_params: dict[str, Any]
     ) -> PyTraceabilityConfig:
         _log.info(f"cli_params: {cli_params}")
+        if cli_params.get("history"):
+            cli_params["history"] = {
+                k: v
+                for k, v in cli_params.items()
+                if k in HistoryModeConfig.model_fields and v is not None
+            }
         config_from_file = get_config_from_pyproject_file(
             Path(cli_params["pyproject_file"])
             if cli_params.get("pyproject_file")
@@ -102,6 +109,11 @@ class PyTraceabilityConfig(BaseModel):
             config_from_file,
         )
         _log.info(f"config: {config}")
+        if config.get("history") and cli_params.get("history") is not False:
+            history_config = HistoryModeConfig(
+                **config["history"],
+            )
+            config["history_config"] = history_config
         return cls(**config)
 
 

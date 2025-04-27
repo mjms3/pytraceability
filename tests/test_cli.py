@@ -4,7 +4,7 @@ import pytest
 from click.testing import CliRunner
 
 from pytraceability.cli import main, OutputFormats
-from pytraceability.config import PyTraceabilityConfig
+from pytraceability.config import PyTraceabilityConfig, HistoryModeConfig
 
 common_output = [
     "Extracting traceability from {base_dir}",
@@ -74,5 +74,7 @@ def test_cli(output_format, expected_output, directory_with_two_files):
 
 def test_all_config_options_can_be_set_with_cli():
     cli_args = {p.name for p in main.params}
-    config_fields = set(PyTraceabilityConfig.model_fields)
+    config_fields = (set(PyTraceabilityConfig.model_fields) - {"history_config"}) | set(
+        HistoryModeConfig.model_fields
+    )
     assert config_fields <= cli_args

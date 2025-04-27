@@ -5,12 +5,11 @@ import sys
 
 import click
 import cloup
-from cloup.constraints import If, Equal, accept_none
+from cloup.constraints import If, accept_none, IsSet
 
 from pytraceability.config import (
     PyTraceabilityConfig,
     PyTraceabilityMode,
-    GitHistoryMode,
     OutputFormats,
 )
 from pytraceability.collector import PyTraceabilityCollector
@@ -40,6 +39,11 @@ def strip_kwargs(f):
         type=cloup.dir_path(exists=True, readable=True, resolve_path=True),
         default=None,
     ),
+    cloup.option(
+        "--python-root",
+        type=cloup.dir_path(exists=True, readable=True, resolve_path=True),
+        default=None,
+    ),
     cloup.option("--decorator-name", type=str),
     cloup.option(
         "--output-format",
@@ -56,17 +60,12 @@ def strip_kwargs(f):
         multiple=True,
     ),
     cloup.option(
-        "--git-history-mode",
-        type=click.Choice([o.value for o in GitHistoryMode]),
+        "--history/--no-history",
+        default=False,
     ),
 )
 @cloup.option_group(
-    f"{GitHistoryMode.FUNCTION_HISTORY} options",
-    cloup.option(
-        "--python-root",
-        type=cloup.dir_path(exists=True, readable=True, resolve_path=True),
-        default=None,
-    ),
+    "History options",
     cloup.option(
         "--git-branch",
         type=str,
@@ -76,9 +75,7 @@ def strip_kwargs(f):
         type=str,
         help="Template URL for commit links, e.g., 'http://github.com/projectname/{commit}'",
     ),
-    constraint=If(
-        ~Equal("git_history_mode", GitHistoryMode.FUNCTION_HISTORY), then=accept_none
-    ),
+    constraint=If(~IsSet("history"), then=accept_none),
 )
 @click.option(
     "-v",
@@ -96,7 +93,6 @@ def main(ctx):
     config = PyTraceabilityConfig.from_command_line_arguments(ctx.params)
 
     _log.display(f"Extracting traceability from {config.base_directory}")
-    _log.display(f"Using python root: {config.python_root}")
 
     for output_line in PyTraceabilityCollector(config).get_printable_output():
         click.echo(output_line)

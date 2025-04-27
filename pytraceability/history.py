@@ -59,6 +59,8 @@ class CurrentFileForKey(Dict[str, Optional[str]]):
 def get_line_based_history(
     traceability_reports: list[TraceabilityReport], config: PyTraceabilityConfig
 ) -> dict[str, list[TraceabilityGitHistory]]:
+    if config.history_config is None:
+        raise ValueError("History mode is not enabled in the config")
     current_file_for_key = CurrentFileForKey.from_traceability_reports(
         traceability_reports, config
     )
@@ -68,7 +70,7 @@ def get_line_based_history(
     for commit in Repository(
         str(repo_root),
         order="reverse",
-        only_in_branch=config.git_branch,
+        only_in_branch=config.history_config.git_branch,
     ).traverse_commits():
         current_file_set = set(current_file_for_key.values())
         relevant_files_first = sorted(
